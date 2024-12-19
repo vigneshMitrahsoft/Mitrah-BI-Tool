@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js" integrity="sha384-+sLIOodYLS7CIrQpBjl+C7nPvqq+FbNUBDunl/OZv93DB7Ln/533i8e/mZXLi/P+" crossorigin="anonymous"></script>
+    <title>userDetails</title>
+    <title>Login form</title>
+    <style>
+        p{
+            color:red;
+        }
+    </style>
+</head>
+<body class = "d-flex justify-content-center align-items-center min-vh-100 bg-secondary text-warning flex-column row-gap-5">
+    <div>
+        <h1>Login Form</h1>
+    </div>  
+    <form method = "post" action = "/uservalidation/" class = "w-25 min-vh-75" onsubmit = "return validation()"> 
+        <div class = "form-group">
+            <label for ="email">Email</label><span style ="color:red">*</span>
+            <input type ="text" id="emailid" name ="emailid"  class = "form-control" oninput = " emailValidation() "><br>
+        </div>
+        <p id ="mailError"></p>
+        <div class = "form-group">
+            <label for ="pass">Password:</label><span style ="color:red">*</span>
+            <input type ="password" id="password" name = "password"  class = "form-control" oninput = " passwordValidation() "><br>
+        </div>
+        <p id="passError" ></p>
+        {% if error %}
+        <p>invalid user</p>
+        {% endif %}
+        <div class = "form-group">
+            <input type = "submit" value = "submit" class = "btn btn-info" id = "submit">
+            <a href = "/index/" style = "float:right;color:white" class ="btn btn-success">Register</a>
+        </div>
+        <!-- <div class = "form-group">
+            <a href = "/add/" style = "float:right;color:white">Register</a>
+        </div> -->
+    </form>
+    <script>
+        function validation(){
+            var error = false;
+            error = emailValidation();
+            error = passwordValidation();
+            // alert(error);
+            if(!error){
+                return true;
+               
+            }
+            return false;
+        }
+        function emailValidation(){
+            var emailid = document.getElementById("emailid").value;
+            // var emailFomat = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+            // var eCheck = emailFormat.test(emailid);
+            if(emailid == ""){
+                document.getElementById("mailError").innerHTML = "Please enter emailaddress";
+                document.getElementById("emailid").style.borderColor = "red";
+                error = true;
+            }
+            // else if(!eCheck){
+            //     // alert("check");
+            //     document.getElementById("mailError").innerHTML = "please enter valid mail format";
+            //     document.getElementById("emailid").style.borderColor = "red";
+            //     error = true;
+            // }
+            else{
+                document.getElementById("mailError").innerHTML = "";
+                document.getElementById("emailid").style.borderColor = "black";
+                error = false;
+                }
+            return error;
+        }
+        function passwordValidation(){
+            var password = document.getElementById("password").value;
+            if(password.length <= 8){
+                document.getElementById("passError").innerHTML = "Please enter password more than 8 characters";
+                document.getElementById("password").style.borderColor = "red";
+                error = true;
+                }
+            else{
+                document.getElementById("passError").innerHTML = "";
+                document.getElementById("password").style.borderColor = "black"; 
+                }
+            return error;
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+<form class="needs-validation" novalidate action = "/uservalidation/" method ="post">
+    <div class="form-row">
+    <div class="form-group">
+        <label for="servername">Server Name</label>
+        <input type="text" class="form-control" id="servername" name = "servername" required>
+    </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="dbname">Database Name</label>
+            <input type="text" class="form-control" id="dbname" name = "dbname" required>
+        </div>
+    </div>
+    <div class="form-row">
+    <div class="form-group">
+        <label for="port">Port</label>
+        <input type="text" class="form-control" id="validationCustom03" name = "port" required>
+    </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="username">User Name</label>
+            <input type="text" class="form-control" id="validationCustom03" name = "username" required>
+        </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" class="form-control" id="validationCustom03" name = "password" required>
+            </div>
+            </div>
+</form>
+
+<script>
+// Example starter JavaScript for disabling form submissions if there are invalid fields
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    var forms = document.getElementsByClassName('needs-validation');
+    // Loop over them and prevent submission
+    var validation = Array.prototype.filter.call(forms, function(form) {
+        form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+        }, false);
+    });
+    }, false);
+})();
+
+</script>
+
+
+
+
+
+################## org
+
+<form method = "post" action = "/uservalidation/" class = "w-25 min-vh-75" onsubmit = "return validation()"> 
+ <div class = "form-group">
+     <label for ="servername">Server Name</label><span style ="color:red">*</span>
+     <input type ="text" id="servername" name ="servername"  class = "form-control"><br>
+ </div>
+ <div class = "form-group">
+     <label for ="dbname">DatabaseName</label><span style ="color:red">*</span>
+     <input type ="text" id="dbname" name ="dbname"  class = "form-control"><br>
+ </div>
+ <div class = "form-group">
+     <label for ="port">Port</label><span style ="color:red">*</span>
+     <input type ="text" id="port" name ="port"  class = "form-control"><br>
+ </div>
+ <div class = "form-group">
+     <label for ="username">User Name</label><span style ="color:red">*</span>
+     <input type ="text" id="username" name ="username"  class = "form-control"><br>
+ </div>
+ <div class = "form-group">
+     <label for ="password">Password</label><span style ="color:red">*</span>
+     <input type ="text" id="password" name ="password"  class = "form-control"><br>
+ </div>
+</form>
+
+     ################ bootstrap ######################
+<form method = "post" action = "/index/" class = "w-25 min-vh-75"> 
+    <div class = "form-group">
+        <label for ="servername">Server Name</label><span style ="color:red">*</span>
+        <input type ="text" id="servername" name ="servername"  class = "form-control"><br>
+    </div>
+    <div class = "form-group">
+        <label for ="dbname">DatabaseName</label><span style ="color:red">*</span>
+        <input type ="text" id="dbname" name ="dbname"  class = "form-control"><br>
+    </div>
+    <div class = "form-group">
+        <label for ="port">Port</label><span style ="color:red">*</span>
+        <input type ="text" id="port" name ="port"  class = "form-control"><br>
+    </div>
+    <div class = "form-group">
+        <label for ="username">User Name</label><span style ="color:red">*</span>
+        <input type ="text" id="username" name ="username"  class = "form-control"><br>
+    </div>
+    <div class = "form-group">
+        <label for ="password">Password</label><span style ="color:red">*</span>
+        <input type ="text" id="password" name ="password"  class = "form-control"><br>
+    </div>
+   </form>
+
+<script>
+// Example starter JavaScript for disabling form submissions if there are invalid fields
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    var forms = document.getElementsByClassName('needs-validation');
+    // Loop over them and prevent submission
+    var validation = Array.prototype.filter.call(forms, function(form) {
+        form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+        }, false);
+    });
+    }, false);
+})();
+
+</script>
+
+
+
+<div class = "modal-body" id ="tableList">
+    <p>hlo ecex</p>
+    <form method = "post" action = "/dbconnectionform/" class = "w-25 min-vh-75">
+      <div class = "checkboxFields" id ="checkboxFields">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <input type = "submit" value = "submit" class = "btn btn-info" id = "submitbtn">
+        <!-- <button id ="submitbtn">submit</button> -->
+    </div>
+    </form>
+  </div> 

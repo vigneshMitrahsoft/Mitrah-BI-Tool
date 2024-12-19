@@ -1,0 +1,7 @@
+django
+pypyodbc
+pyodbc
+pandas
+sqlalchemy
+pg8000
+pymysql
