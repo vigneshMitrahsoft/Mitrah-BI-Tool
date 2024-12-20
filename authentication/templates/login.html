@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	{% include "header.html" %}
+	<style>
+		p{
+			color:red;
+		}
+	</style>
+</head>
+<body class="d-flex justify-content-center align-items-center min-vh-100 bg-secondary text-warning">
+	<form class="needs-validation w-25 min-vh-75" novalidate action="/uservalidation" method="post" >
+		<h1 style="padding-bottom:50px;text-align:center;">Login</h1>
+		<div class="form-group">
+			<label for="validationCustom01">UserName</label>
+			<input type="text" class="form-control" id="validationCustom01" name="emailid" required>
+		</div>
+		<div class="form-group">
+			<label for="validationCustom03">Password</label>
+			<input type="text" class="form-control" id="validationCustom03" name="password" required>
+		</div>
+		<input type="submit" value="submit" class="btn btn-info" id="submit">
+	</form>
+	<script>
+	(function() {
+		'use strict';
+		window.addEventListener('load', function() {
+		var forms = document.getElementsByClassName('needs-validation');
+		var validation = Array.prototype.filter.call(forms, function(form) {
+			form.addEventListener('submit', function(event) {
+			if (form.checkValidity() === false) {
+				event.preventDefault();
+				event.stopPropagation();
+			}
+			form.classList.add('was-validated');
+			}, false);
+		});
+		}, false);
+	})();
+	</script>
+</body>
+</html>

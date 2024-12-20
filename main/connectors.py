@@ -1,9 +1,8 @@
 from builtins import str
-# import pypyodbc as pyodbc
 import pyodbc
 import main.query as query
-from sqlalchemy import create_engine,MetaData,inspect
-from sqlalchemy.exc import SQLAlchemyError, InterfaceError
+from sqlalchemy import create_engine
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import text
  
 class connectors:
@@ -14,18 +13,17 @@ class connectors:
             params = f'{kwargs.get('user_name')}:{kwargs.get('password')}@{kwargs.get('server_name')}/{kwargs.get('database_name')}'
             if (self.db_driver == 'SQL Server'):
                 self.connection_string = f'mssql+pyodbc://{params}?driver=ODBC+Driver+17+for+SQL+Server'
-                self.query_string = query.get_tables['sql']
+                self.query_string = query.string_query['sql']
             elif (self.db_driver == 'MySQL'):
                 self.connection_string =f'mysql+pymysql://{params}'
-                self.query_string = query.get_tables['MySQL'].format(f"'{kwargs.get('database_name')}' ORDER BY TABLE_SCHEMA")
+                self.query_string = query.string_query['MySQL'].format(f"'{kwargs.get('database_name')}' ORDER BY TABLE_SCHEMA,TABLE_NAME")
             elif (self.db_driver == 'PostgreSQL'):
                 self.connection_string = f'postgresql+pg8000://{params}'
-                self.query_string = query.get_tables['postgres']
+                self.query_string = query.string_query['postgres']
             self.engine = create_engine(self.connection_string)
             self.connection = self.engine.connect()
         except  SQLAlchemyError as e:
             self.error = e
-            print("error---->",type(self.error))
             self.connection = None
 
     def get_tables(self):
@@ -39,10 +37,8 @@ class connectors:
                 return all_table_name
             
             except SQLAlchemyError as e:
-                print("Error occurred while fetching tables:", e)
                 return {'error': str(e)}
         else:
-            print("No connection established.")
             return {'error': str(self.error)}
 
 
