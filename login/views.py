@@ -18,7 +18,7 @@ def userValidation(request):
             print("if block exec")
             request.session['emailid'] = emailid
             request.session.save()
-            return redirect('/index/') 
+            return redirect('/') 
         else:
             print("invalid")
             context = {
@@ -33,7 +33,7 @@ def loginValid(func):
     def val(request):
         sessionMailid = request.session.get("emailid")
         if(sessionMailid):
-           return redirect("/index/")  
+           return redirect("")  
         else:
            func(request)
         return func(request)
@@ -44,7 +44,7 @@ def loginPage(request):
 
 def logoutUser(request):
     Session.objects.filter(session_key = request.session.session_key).delete()
-    return redirect('/')
+    return redirect('/login')
 
 def dbConnectionForm(request):
     if request.method == 'POST':

@@ -21,7 +21,7 @@
     <div>
         <h1>Login Form</h1>
     </div>  
-    <form method = "post" action = "/uservalidation/" class = "w-25 min-vh-75" onsubmit = "return validation()"> 
+    <form method = "post" action = "uservalidation" class = "w-25 min-vh-75" onsubmit = "return validation()"> 
         <div class = "form-group">
             <label for ="email">Email</label><span style ="color:red">*</span>
             <input type ="text" id="emailid" name ="emailid"  class = "form-control" oninput = " emailValidation() "><br>
@@ -98,7 +98,7 @@
 
 
 
-<form class="needs-validation" novalidate action = "/uservalidation/" method ="post">
+<form class="needs-validation" novalidate action = "uservalidation" method ="post">
     <div class="form-row">
     <div class="form-group">
         <label for="servername">Server Name</label>
@@ -159,7 +159,7 @@
 
 ################## org
 
-<form method = "post" action = "/uservalidation/" class = "w-25 min-vh-75" onsubmit = "return validation()"> 
+<form method = "post" action = "uservalidation" class = "w-25 min-vh-75" onsubmit = "return validation()"> 
  <div class = "form-group">
      <label for ="servername">Server Name</label><span style ="color:red">*</span>
      <input type ="text" id="servername" name ="servername"  class = "form-control"><br>

@@ -44,7 +44,7 @@
               </a>
               <ul class="dropdown-menu navbar-light">
                 <li><a class="dropdown-item"  id ="myprofile">My Profile</a></li>
-                <li><a class="dropdown-item" href="/logout/">Logout</a></li>
+                <li><a class="dropdown-item" href="logout">Logout</a></li>
               </ul>
           </form>
         </div>
@@ -128,13 +128,32 @@
         </div> 
       </div> 
       <script>
-        function openDBForm(source) {
-          $('#dbFromModal').modal('show');
-          $('#drivername').val(source);
-        }
+    //     (function() {
+    //     window.addEventListener('load', function() {
+    //     var forms = document.getElementsByClassName('needs-validation');
+    //     var validation = Array.prototype.filter.call(forms, function(form) {
+    //         form.addEventListener('submit', function(event) {
+    //         if (form.checkValidity() === false) {
+    //           console.log("irt was execue")
+    //             event.preventDefault();
+    //             event.stopPropagation();
+    //         }
+    //         form.classList.add('was-validated');
+    //         }, false);
+    //     });
+    //     }, false);
+    // })();
+      function openDBForm(source) {
+        $('#dbFromModal').modal('show');
+        $('#drivername').val(source);
+      }
       $('document').ready(function(){
        $("#submitbtn").click(function(event){
-        event.preventDefault();
+
+        // if (form.checkValidity() === false) {
+        //   console.log("bootstrap validation part");                    
+        // } 
+        event.preventDefault();             
         var driver_name = $('#drivername').val();
         var server_name = document.getElementById('servername').value;
         var db_name = document.getElementById('dbname').value;
@@ -149,7 +168,7 @@
             'user_name':user_name,
             'password':password
         }
-        $.ajax({url: "/dbconnectionform/",data:data,type:'POST', success: function(response){
+        $.ajax({url: "/dbconnectionform",data:data,type:'POST', success: function(response){
           $('#dbFromModal').modal('hide');
           $('#dbForm')[0].reset();
           table_names = response.tables;
