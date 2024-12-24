@@ -27,8 +27,8 @@
 						Data
 						</a>
 						<div class="dropdown-menu">
-						<a class="dropdown-item" href="#">Excel</a>
-						<a class="dropdown-item" href="#">CSV File</a>
+						<a class="dropdown-item" onclick="openFileField('Excel')">Excel</a>
+						<a class="dropdown-item" onclick="openFileField('Csv')">CSV File</a>
 						</div>
 					</li>
 				</ul>
@@ -106,6 +106,7 @@
 							<form method="post" class="w-100 min-vh-75" id ="checkboxsection">
 								<div class="checkboxFields" id ="checkboxFields">
 								</div>
+								
 							</form>
 						</div>
 						<div class="col-8" style="border-left: 2px solid #e9ecef;overflow-x:auto">
@@ -114,40 +115,92 @@
 						</div>
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-						<input type="submit" value="Load" class="btn btn-info" id="submitbtn">
+						<form action="/sourcerecords" method ="post" onsubmit="return sources_details()">
+							<input type="hidden" id = "checked_tables" name ="checked_tables">
+							<input type = "hidden" id ="source_details" name="source_details">
+							<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+							<input type="submit" value="Load" class="btn btn-info" id="load_btn">	
+						</form>
 					</div>
 				</div>
 			</div>
 		</div>
+		<div class="modal fade" id="errormodal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+			<div class="modal-dialog  modal-dialog-scrollable ">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="exampleModalLabel">Error!</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body d-flex overflow-hidden" id="errormessage">
+						<div id="error_message_field"></div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+						<input type="submit" value="Ok" class="btn btn-info" id="submitbtn">
+					</div>
+				</div>
+			</div>
+		</div>
+		<div>
+			<input type="file" id="file_input" style="visibility:hidden">
+		</div>
 	</body>
 	<script>
-		// (function() {
-		// 	window.addEventListener('load', function() {
-		// 	var forms=document.getElementsByClassName('needs-validation');
-		// 	var validation = Array.prototype.filter.call(forms, function(form) {
-		// 		form.addEventListener('submit', function(event) {
-		// 			if (form.checkValidity() === false) {
-		// 				console.log("irt was execue")
-		// 				event.preventDefault();
-		// 				event.stopPropagation(); 
-		// 			}
-		// 		form.classList.add('was-validated');
-		// 		}, false);
-		// 	});
-		// 	}, false);
-		// })();
+		
 		function openDBForm(source) {
 			$('#dbForm')[0].reset();
 			$('#dbFromModal').modal('show');
 			modal_title =`Connect ${source} Database`;
-			$('#dbform_modal_title').text(modal_title)
+			$('#dbform_modal_title').text(modal_title);
 			$('#drivername').val(source);
 		}
+		function openFileField(source) {
+			$('#file_input').val('');
+			$('#file_input').click();
+			$('#file_input').change(function(event) {
+				event.preventDefault();
+				var file = event.target.files[0];
+				var formData = new FormData();
+				formData.append('file', file);
+				formData.append('source',source);
+				$.ajax({
+					url: "/sheets",  
+					data: formData,
+					type: 'POST',
+					processData: false,  
+					contentType: false,  
+					success: function(response) {
+						var sheet_names = response.sheets;
+						console.log(sheet_names);
+						if(response.error){
+							$('#error_message_field').empty();
+							console.log("error sheet exec");
+							table = '<div><p style ="color:red">'+response.error+'</p></div>';
+							$('#error_message_field').append(table);
+							$('#tablelist').modal('hide');
+							$('#errormodal').modal('show');
+						}
+						else{
+							$("#checkboxFields").empty();
+							$('#searchField').val('');
+							for(let sheet in sheet_names){
+							sheet = '<div class ="form-check" ><input class="form-check-input"type = "checkbox" value="'+sheet_names[sheet]+'">'+sheet_names[sheet]+'</div>';
+							$('#checkboxFields').append(sheet);
+							$('#tablelist').modal('show');	
+							}
+						}
+							
+					}
+				});
+			});
+		}	
 		$('document').ready(function(){
 			$("#submitbtn").click(function(event) {
 				// if (form.checkValidity() === false) {
-				// console.log("bootstrap validation part");					
+				// console.log("bootstrap validation part");
 				// } 
 				event.preventDefault();
 				var driver_name = $('#drivername').val();
@@ -164,9 +217,11 @@
 					'user_name':user_name,
 					'password':password
 				}
+				var valuee = $('#source_details').val(JSON.stringify(data));
 				$.ajax({url: "/tables",data:data,type:'POST', success: function(response){
 				$('#dbFromModal').modal('hide');
 				$('#dbForm')[0].reset();
+			
 				table_names = response.tables;
 				error = 'error' in response.tables;
 				if('error' in response.tables){
@@ -200,5 +255,30 @@
 				$('div.form-check').show();
 			}
 		});
+		function sources_details(){
+			var db_credential  = $('#source_details').val();
+			var selected_tables = [];
+			var selected_tables = $(".form-check-input:checkbox:checked").map(function() {
+    			return this.value;
+			}).get();
+			$('#checked_tables').val(selected_tables);
+			return true;
+		}
+		// (function() {
+		// 	window.addEventListener('load', function() {
+		// 	var forms=document.getElementsByClassName('needs-validation');
+		// 	var validation = Array.prototype.filter.call(forms, function(form) {
+		// 		form.addEventListener('submit', function(event) {
+		// 			if (form.checkValidity() === false) {
+		// 				console.log("irt was execue")
+		// 				event.preventDefault();
+		// 				event.stopPropagation(); 
+		// 			}
+		// 		form.classList.add('was-validated');
+		// 		event.preventDefault();
+		// 		}, false);
+		// 	});
+		// 	}, false);
+		// })();
 	</script>
 </html>

@@ -1,64 +1,57 @@
+
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    {% include "header.html" %}
-</head>
-<body>
-    <form class="row g-3 needs-validation" novalidate>
-        <div class="col-md-4 position-relative">
-          <label for="validationTooltip01" class="form-label">First name</label>
-          <input type="text" class="form-control" id="validationTooltip01" value="Mark" required>
-          <div class="valid-tooltip">
-            Looks good!
-          </div>
-        </div>
-        <div class="col-md-4 position-relative">
-          <label for="validationTooltip02" class="form-label">Last name</label>
-          <input type="text" class="form-control" id="validationTooltip02" value="Otto" required>
-          <div class="valid-tooltip">
-            Looks good!
-          </div>
-        </div>
-        <div class="col-md-4 position-relative">
-          <label for="validationTooltipUsername" class="form-label">Username</label>
-          <div class="input-group has-validation">
-            <span class="input-group-text" id="validationTooltipUsernamePrepend">@</span>
-            <input type="text" class="form-control" id="validationTooltipUsername" aria-describedby="validationTooltipUsernamePrepend" required>
-            <div class="invalid-tooltip">
-              Please choose a unique and valid username.
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6 position-relative">
-          <label for="validationTooltip03" class="form-label">City</label>
-          <input type="text" class="form-control" id="validationTooltip03" required>
-          <div class="invalid-tooltip">
-            Please provide a valid city.
-          </div>
-        </div>
-        <div class="col-md-3 position-relative">
-          <label for="validationTooltip04" class="form-label">State</label>
-          <select class="form-select" id="validationTooltip04" required>
-            <option selected disabled value="">Choose...</option>
-            <option>...</option>
-          </select>
-          <div class="invalid-tooltip">
-            Please select a valid state.
-          </div>
-        </div>
-        <div class="col-md-3 position-relative">
-          <label for="validationTooltip05" class="form-label">Zip</label>
-          <input type="text" class="form-control" id="validationTooltip05" required>
-          <div class="invalid-tooltip">
-            Please provide a valid zip.
-          </div>
-        </div>
-        <div class="col-12">
-          <button class="btn btn-primary" type="submit">Submit form</button>
-        </div>
-      </form>
-</body>
+<html>
+	<head>
+		<meta charset="utf-8">
+		{% include "header.html" %}
+		{% load static %}
+		<link rel="stylesheet" href=" {% static '/css/loginpage.css' %}">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+	</head>
+	<body>
+		<div class="content">
+			<div class="text">
+				Login Form
+			</div>
+			<form class="needs-validation" novalidate action="/uservalidation" method="post">
+				<div class="form-group">
+					<input type="text"  class="form-control" required>
+					<span class="fas fa-user"></span>
+					<label>Email or Phone</label>
+				</div>
+				<div class="form-group">
+					<input type="password" class="form-control" required>
+					<span class="fas fa-lock"></span>
+					<label>Password</label>
+				</div>
+				<div class="forgot-pass">
+					<a href="#">Forgot Password?</a>
+				</div>
+				<!-- <button>Sign in</button> -->
+				<input type="submit" value="submit" class="btn btn-info" id="submit">
+				
+				<div class="sign-up">
+					Not a member?
+					<a href="#">signup now</a>
+				</div>
+			</form>
+		</div>
+	<script>
+	  (function() {
+	    'use strict';
+	    window.addEventListener('load', function() {
+	    var forms = document.getElementsByClassName('needs-validation');
+	    var validation = Array.prototype.filter.call(forms, function(form) {
+		form.addEventListener('submit', function(event) {
+		if (form.checkValidity() === false) {
+		  event.preventDefault();
+		  event.stopPropagation();
+		}
+		form.classList.add('was-validated');
+		}, false);
+	    });
+	    }, false);
+	  })();
+	  </script>
+   </body>
 </html>
