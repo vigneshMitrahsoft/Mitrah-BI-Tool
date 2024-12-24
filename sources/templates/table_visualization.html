@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>visualization</title>
+        {% include "header.html" %}
+		<style>
+			.list-group-item.active {
+				background-color: #b0b3b7;
+    			border-color: #b0b3b7;
+			}
+		</style>
+    </head>
+    <body style="border:2px solid #e9ecef">
+        <div class="d-flex w-100 pt-3 pr-3 pl-3" style="column-gap:5px;">
+            <div class="col-2" style="border:2px solid #e9ecef">
+                <p> Properties Fields</p>
+            </div>
+            <div class="col-8" style="border:2px solid #e9ecef">
+                <table class="table table-sm" id ="table_data">
+					<thead ><tr id ="table_header"></tr></thead>
+					<tbody id ="table-data"><tr></tr></tbody>
+				</table>
+            </div>
+            <div class="col-2" style="border:2px solid #e9ecef;padding-left: 0px;padding-right: 0px;">
+				<h5>Tables</h5>
+				<div class="list-group list-group-flush" id="table-list">
+				</div>
+            </div>
+        </div>    
+    </body>
+    <script>
+		var table_list = {};
+        function getTableList(){
+            var source_id = "{{source_id}}";
+            var source = {
+                'source_id':source_id
+            };
+            $.ajax({
+                url: "/gettablelist",
+                data: source,
+                type: 'POST',
+                success: function(response){
+                    table_list = response.table_list;
+                    var table_names = Object.keys(table_list);
+                    getTableData(source_id, table_names[0]);
+					render_tables(source_id, table_names);
+                }
+            });
+        }
+
+		function render_table_headers(column_list) {
+			$('#table_header').empty();
+			table_header = '';
+			for(index in column_list){
+				table_header += '<th scope="col">'+column_list[index]+'</th>'; 
+			}
+			$('#table_header').append(table_header);
+		}
+		function render_table_body(table_data) {
+			$('#table-data').empty();
+			var table_record ='';
+			for(index in table_data) {
+				var table_body = '';
+				var column = Object.values(table_data[index]);
+				for(value in column) {
+					table_body +='<td>'+column[value]+'</td>';
+				}
+				table_record +=`<tr>${table_body}</tr>`;	
+			}
+			$('#table-data').append(table_record);
+			
+		}
+		function render_tables(source_id, table_names) {
+			table_elements = '';
+			for(index in table_names) {
+				var isActive = index == 0 ? 'active' : '';
+				var table_name = "'"+table_names[index]+"'";
+				table_elements += '<button type="button" class="list-group-item list-group-item-action '+isActive+'" onClick="getTableData('+source_id+', '+table_name+')">'+table_names[index]+'</button>';
+			}
+			$('#table-list').append(table_elements);
+		}
+
+		$('body').on('click', '.list-group-item', function() {
+			$('.list-group-item.active').removeClass('active');
+			$(this).addClass('active');
+		});
+
+        function getTableData(source_id, table_name){
+			render_table_headers(table_list[table_name]);
+            var data = {
+                'source_id': source_id,
+                'table_name': table_name
+            };
+            
+            $.ajax({
+                url: "/gettabledata",
+                data: data,
+                type:'POST',
+                success: function(response){
+					render_table_body(response.data);
+                }
+            });
+        }
+        $(document).ready(function(){
+            var get_table_result = getTableList();
+        });
+    </script>
+</html>

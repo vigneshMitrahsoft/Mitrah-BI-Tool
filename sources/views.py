@@ -1,6 +1,7 @@
 from builtins import str
 import json
 from django.http import  JsonResponse
+from django.shortcuts import render
 from main.connectors import connectors
 import pandas as pd
 from .models import sources
@@ -23,10 +24,6 @@ def getTables(request):
        
         return JsonResponse({'tables': tables})
 
-# def getSheets(request):
-#     print("py file exec------------->")
-#     file_name = request.POST.get('file')
-#     print("file name-------------->",file_name)
 
 def getSheets(request):
     source = request.POST.get('source')
@@ -49,55 +46,73 @@ def getSheets(request):
             return JsonResponse({'error':"Invalid Format"})
 
 def sourceRecords(request):
-    source_details = request.POST.get("source_details")
-    checked_tables = request.POST.get("checked_tables")
-    db_credential = json.loads(source_details)
-    selected_tables = checked_tables.split(",")
-    user_id = 1
-    create_db = sources.objects.create(db_credential = db_credential, selected_tables = selected_tables, user_id = user_id)
-    source_id = create_db.source_id
-    params = f'{db_credential["user_name"]}:{db_credential["password"]}@{db_credential["server_name"]}/{db_credential["database_name"]}'
-    if db_credential['driver_name'] == "SQL Server":
-        connection_string = f'mssql+pyodbc://{params}?driver=ODBC+Driver+17+for+SQL+Server'
-    elif db_credential['driver_name'] == "MySQL":
-        connection_string =f'mysql+pymysql://{params}'
-    elif db_credential['driver_name'] == "PostgreSQL":
-        connection_string = f'postgresql+pg8000://{params}' 
+    # source_details = request.POST.get("source_details")
+    # checked_tables = request.POST.get("checked_tables")
+    # db_credential = json.loads(source_details)
+    # selected_tables = checked_tables.split(",")
+    # user_id = 1
+    # create_db = sources.objects.create(db_credential = db_credential, selected_tables = selected_tables, user_id = user_id)
+    # source_id = create_db.source_id
+    # params = f'{db_credential["user_name"]}:{db_credential["password"]}@{db_credential["server_name"]}/{db_credential["database_name"]}'
+    # if db_credential['driver_name'] == "SQL Server":
+    #     connection_string = f'mssql+pyodbc://{params}?driver=ODBC+Driver+17+for+SQL+Server'
+    # elif db_credential['driver_name'] == "MySQL":
+    #     connection_string =f'mysql+pymysql://{params}'
+    # elif db_credential['driver_name'] == "PostgreSQL":
+    #     connection_string = f'postgresql+pg8000://{params}' 
   
-    engine = create_engine(connection_string)
-    connection = engine.connect()
-    for table in selected_tables:
-        query_string = f"select * from {table}"
-        selected_table = connection.execute(text(query_string))
-        df = pd.DataFrame(selected_table.fetchall())
-        parquet_name = f'{table}.parquet'
-        path_directory = "assest/parquet_files"
-        source_path_directory = f"assest/parquet_files/source_{source_id}"
-        # if not os.path.exists(path_directory):
-        #     os.makedirs(path_directory)
-        # else:
-        #     source_path_directory = f"assest/parquet_files/source_{source_id}"
-        #     if not os.path.exists(source_path_directory):
-        #         os.makedirs(source_path_directory)
-        #         if os.path.exists(source_path_directory):
-        #             file_path = f'{source_path_directory}/.{parquet_name}'
-        #             df.to_parquet(file_path)
-        #     else:
-        #         file_path = f'{source_path_directory}/.{parquet_name}'
-        #         df.to_parquet(file_path)
-        if not os.path.exists(path_directory):
-            os.makedirs(path_directory)
-        elif os.path.exists(path_directory) and not os.path.exists(source_path_directory):
-            os.makedirs(source_path_directory)
-            if os.path.exists(path_directory) and os.path.exists(source_path_directory):
-                file_path = f'{source_path_directory}/.{parquet_name}'
-                df.to_parquet(file_path)
-        else:
-            file_path = f'{source_path_directory}/.{parquet_name}'
-            df.to_parquet(file_path)
-        
-        
+    # engine = create_engine(connection_string)
+    # connection = engine.connect()
+    # for table in selected_tables:
+    #     query_string = f"select * from {table}"
+    #     selected_table = connection.execute(text(query_string))
+    #     df = pd.DataFrame(selected_table.fetchall())
+    #     parquet_name = f'{table}.parquet'
+    #     path_directory = "assest/parquet_files"
+    #     source_path_directory = f"assest/parquet_files/source_{source_id}"
+    #     # if not os.path.exists(path_directory):
+    #     #     os.makedirs(path_directory)
+    #     # else:
+    #     #     source_path_directory = f"assest/parquet_files/source_{source_id}"
+    #     #     if not os.path.exists(source_path_directory):
+    #     #         os.makedirs(source_path_directory)
+    #     #         if os.path.exists(source_path_directory):
+    #     #             file_path = f'{source_path_directory}/.{parquet_name}'
+    #     #             df.to_parquet(file_path)
+    #     #     else:
+    #     #         file_path = f'{source_path_directory}/.{parquet_name}'
+    #     #         df.to_parquet(file_path)
+    #     if not os.path.exists(path_directory):
+    #         os.makedirs(path_directory)
+    #     elif os.path.exists(path_directory) and not os.path.exists(source_path_directory):
+    #         os.makedirs(source_path_directory)
+    #         if os.path.exists(path_directory) and os.path.exists(source_path_directory):
+    #             file_path = f'{source_path_directory}/{parquet_name}'
+    #             df.to_parquet(file_path)
+    #     else:
+    #         file_path = f'{source_path_directory}/{parquet_name}'
+    #         df.to_parquet(file_path)
+    source_id = 23  
+    return render(request,"table_visualization.html", {'source_id': source_id})
 
+def getTableList(request):
+    source_id = request.POST.get('source_id')
+    path = f'assest/parquet_files/source_{source_id}'
+    dir_list = os.listdir(path)
+    table_list = {}
+    for table in dir_list:
+        _path = f'{path}/{table}'
+        print("path", _path)
+        data = pd.read_parquet(_path)
+        table_name = table.rsplit('.', 1)[0]
+        table_list[table_name] = list(data.columns.values)
+    return JsonResponse({'table_list': table_list})
 
-    
-
+def getTableData(request):
+    source_id = request.POST.get('source_id')
+    table_name = request.POST.get('table_name')
+    path = f'assest/parquet_files/source_{source_id}/{table_name}.parquet'
+    data = pd.read_parquet(path)
+    data = data.head(2)
+    table_records = data.to_json(orient='records')
+    return JsonResponse({'data': json.loads(table_records)})
