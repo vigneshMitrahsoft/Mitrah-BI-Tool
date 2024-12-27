@@ -168,7 +168,7 @@
 				formData.append('file', file);
 				formData.append('source',source);
 				$.ajax({
-					url: "/sheets",  
+					url: "/showSheets",  
 					data: formData,
 					type: 'POST',
 					processData: false,  
@@ -219,7 +219,7 @@
 					'password':password
 				}
 				var valuee = $('#source_details').val(JSON.stringify(data));
-				$.ajax({url: "/tables",data:data,type:'POST', success: function(response){
+				$.ajax({url: "/showtables",data:data,type:'POST', success: function(response){
 				$('#dbFromModal').modal('hide');
 				$('#dbForm')[0].reset();
 			

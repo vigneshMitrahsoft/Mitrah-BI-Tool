@@ -24,7 +24,12 @@
 					<tbody id ="table-data"><tr></tr></tbody>
 				</table>
 			</div>
-			<div class="col-2" style="border:2px solid #e9ecef;padding-left: 0px;padding-right: 0px;">
+			<div class="col-2" style="border:2px solid #e9ecef;padding-left: 0px;padding-right: 0px;overflow-x:auto;">
+				<!-- <div class="list-group list-group-flush d-flex flex-row" style="border-bottom:2px solid #e9ecef"> -->
+					<button type="button" class="btn btn-outline-secondary btn-sm" id ="table_button"><i class="fas fa-table "></i></button>
+					<button type="button" class="btn btn-outline-secondary btn-sm" id ="chart_button"><i class="fas fa-chart-pie "></i></button>
+					
+				<!-- </div> -->
 				<h5>Tables</h5>
 				<div class="list-group list-group-flush" id="table-list">
 				</div>
@@ -111,13 +116,13 @@
 				type:'POST',
 				success: function(response){
 					console.log(response.total_record);
-					if(response.data.length == 0)
-						console.log("value")
+					if(response.data.length == 0){
+						console.log("false block executed");
 						still_has_data = false;
-
+					}
 					if(still_has_data)
-						comsole.log("the statement exec")
 						render_table_body(response.data);
+
 				}
 			});
 		}
@@ -126,13 +131,17 @@
 		});
 		$('#data_visual').on('scroll', function() {
 			var scrollPercentage = ($(this).scrollTop() / ($(this)[0].scrollHeight - $(this)[0].clientHeight)) * 100;
-
 			if (scrollPercentage >= 90 && still_has_data) {
 				current_page += 1;
 				table_name = $('.list-group-item.active').text();
-				console.log(table_name)
 				getTableData(table_name);
 			}
+		});
+		$('#chart_button').click(function(){
+			$('#table_data').hide();
+		});
+		$('#table_button').click(function(){
+			$('#table_data').show();
 		});
 	</script>
 </html>

@@ -9,6 +9,7 @@ class connectors:
     
     def __init__(self, **kwargs):
         self.db_driver = kwargs.get('driver_name')
+        print("driver_name ---->",self.db_driver)
         try:
             params = f'{kwargs.get('user_name')}:{kwargs.get('password')}@{kwargs.get('server_name')}/{kwargs.get('database_name')}'
             if (self.db_driver == 'SQL Server'):
@@ -40,6 +41,16 @@ class connectors:
                 return {'error': str(e)}
         else:
             return {'error': str(self.error)}
+    
+    def get_selected_tables(self,table):
+        if self.connection:
+            query_string = f"select * from {table}"
+            print("query string ",query_string)
+            selected_table = self.connection.execute(text(query_string))
+            print(selected_table)
+            return selected_table     
+         
+
 
 
 
