@@ -45,11 +45,9 @@ class connectors:
     def get_selected_tables(self,table):
         if self.connection:
             query_string = f"select * from {table}"
-            print("query string ",query_string)
             selected_table = self.connection.execute(text(query_string))
-            print(selected_table)
             return selected_table     
-         
+        "oUw7hMVhht6hm7eFr4DtTztoyzfK4TJCGXQVegSKBeHpi1nT9aB6BkhaphstEJnKHOkaq9u8qt3rUo5IajNYm8gFX4KAGsKcWYYvAgAsXd88P7eh7x67D3zc+aLjT89DRhV/xYi98jKBkYJUFUP2XDcnwF7H0wXm39clQro6oTkO8vCAmfDz8WCCPf2kKIZexCalGGTtVvwobVnAacWMNA=="
 
 
 

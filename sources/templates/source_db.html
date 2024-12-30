@@ -1,37 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    {% include "header.html" %}
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	{% include "header.html" %}
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.js"></script>
 </head>
 <body style = "margin:80px 50px 80px 50px">
-    <table class = "table table-secondary table-bordered">
-        <tr>
-            <th >Source_id</th>
-            <th >Db credential</th>
-            <th >Selected tables</th>
-            <th >User id</th>
-            <th >Created Date</th>
-            <th >Created Id</th>
-            <th >Updated Date</th>
-            <th >Updated Id</th>
-          
-        </tr>
-        {% for data in source_data %}
-        <tr>
-            <td>{{data.source_id}}</td>
-            <td>{{data.db_credential}}</td>
-            <td>{{data.selected_tables}}</td>
-            <td>{{data.user_id}}</td>
-            <td>{{data.ct_dt}}</td>
-            <td>{{data.ct_id}}</td>
-            <td>{{data.ut_dt}}</td>
-            <td>{{data.ut_id}}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    
+	<table class = "table table-secondary table-bordered">
+		<tr>
+			<th >Source_id</th>
+			<th >Db credential</th>
+			<th >Selected tables</th>
+			<th >User id</th>
+			<th >Created Date</th>
+			<th >Created Id</th>
+			<th >Updated Date</th>
+			<th >Updated Id</th>
+		  
+		</tr>
+		{% for data in source_data %}
+		<tr>
+			<td>{{data.source_id}}</td>
+			<td>{{data.db_credential}}</td>
+			<td>{{data.selected_tables}}</td>
+			<td>{{data.user_id}}</td>
+			<td>{{data.ct_dt}}</td>
+			<td>{{data.ct_id}}</td>
+			<td>{{data.ut_dt}}</td>
+			<td>{{data.ut_id}}</td>
+		</tr>
+		{% endfor %}
+	</table>
+	<p id="para" ></p>	
 </body>
+<!-- <script>
+	var keyUtf8 = CryptoJS.enc.Base64.parse('1234567890=');
+	console.log(keyUtf8);
+	var ivUtf8 = CryptoJS.enc.Base64.parse('1234==');
+	console.log(ivUtf8);
+	var data1 = {"name":"navis"};
+	var encrypted = CryptoJS.AES.encrypt(JSON.stringify(data1), keyUtf8, {
+		iv: ivUtf8,
+		padding: CryptoJS.pad.Pkcs7,
+		mode: CryptoJS.mode.CBC}).toString();
+
+	console.log('encrypted===aes=='+encrypted);
+	document.getElementById('para').innerHTML = encrypted;
+</script> -->
+<!-- <script>
+	function encryptData(data, secretKey) {
+		// Generate a random IV (Initialization Vector)
+		const iv = CryptoJS.lib.WordArray.random(16);
+		
+		// Encrypt the data using AES (CBC mode with PKCS7 padding)
+		const encrypted = CryptoJS.AES.encrypt(data, CryptoJS.enc.Utf8.parse(secretKey), {
+			iv: iv,
+			mode: CryptoJS.mode.CBC,
+			padding: CryptoJS.pad.Pkcs7
+		});
+
+		// Return the encrypted data and the IV (encoded as Base64)
+		return {
+			ciphertext: encrypted.toString(),
+			iv: iv.toString(CryptoJS.enc.Base64)  // IV should be base64 encoded
+		};
+	}
+
+	// Example usage
+	const secretKey = 'mysecretkey12345';  // The key should be 16 bytes long (128 bits)
+	const data = {'name':'navis'};
+
+	const encryptedData = encryptData(data, secretKey);
+	console.log('Encrypted Data:', encryptedData);
+</script> -->
+<script>
+function encryptData(data, secretKey) {
+    // const iv = CryptoJS.lib.WordArray.random(16);
+	// const iv = CryptoJS.enc.Base64.parse('7eacb054-0aa7-42c7-be76-996a4a9ca4ca');
+	var iv = CryptoJS.enc.Base64.parse('BBBBBBBBBBBBBBBB');
+    const encrypted = CryptoJS.AES.encrypt(data, CryptoJS.enc.Utf8.parse(secretKey), {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+    });
+    datas =  {
+        ciphertext: encrypted.toString(),
+        iv: iv.toString(CryptoJS.enc.Base64),
+		secret_key:secretKey,
+    };
+	return datas ;
+}
+
+const secretKey = 'navissmith010701';
+const source_data ={'driver_name':"navven",'server_name':"swlldkh",'database_name':"nhfkhfdkhf",'port':"1433",'user_name':"dnkdbfb",'password':"dcdsfb"};
+const data = JSON.stringify(source_data)
+
+const encryptedData = encryptData(data, secretKey);
+
+console.log('Encrypted Data:', encryptedData);
+</script>
+</body>
+</html>
+
+
 </html>

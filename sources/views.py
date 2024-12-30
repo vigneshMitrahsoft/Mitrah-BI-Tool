@@ -7,7 +7,28 @@ from .models import sources
 from main.connectors import connectors
 from cryptography.fernet import Fernet
 import os
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
+from base64 import b64decode
 
+def decryptDbCredential(data):
+	def decrypt_data(encrypted_data, secret_key):
+		ciphertext = b64decode(encrypted_data['ciphertext'])
+		iv = b64decode(encrypted_data['iv'])
+		key = secret_key.encode('utf-8')
+		cipher = AES.new(key, AES.MODE_CBC, iv)
+		decrypted_data = unpad(cipher.decrypt(ciphertext), AES.block_size)
+		return decrypted_data.decode('utf-8')
+	encrypted_data = {
+		'ciphertext': data['ciphertext'],
+		'iv': data['iv'],
+	}
+	secret_key = "navissmith010701"
+	decrypted_data = decrypt_data(encrypted_data, secret_key)
+	# print(f'Decrypted data: {decrypted_data}')
+	value = json.loads(decrypted_data)
+	# print(type(decrypted_data))
+	return value
 def getTables(request):
 	if request.method == 'POST':
 		driver_name = request.POST.get('driver_name')
@@ -51,31 +72,25 @@ def changeDateFormat(data_frame):
 	# data_frame['ModifiedDate'] = format(data_frame['ModifiedDate'], 'dd/mm/yyyy')
 
 	return data_frame
-def encryption(data):
-	key = Fernet.generate_key()
-	cipher_text = Fernet(key)
-	cipher_text = cipher_text.encrypt(str(data).encode())
-	return cipher_text
-
+# def encryption(data):
+# 	key = Fernet.generate_key()
+# 	cipher_text = Fernet(key)
+# 	cipher_text = cipher_text.encrypt(str(data).encode())
+# 	return cipher_text
 
 def sourceRecords(request):
 	source_details = request.POST.get("source_details")
-	db_credential = json.loads(source_details)
+	source_details = json.loads(source_details)
+	db_credential = decryptDbCredential(source_details)
 	checked_tables = request.POST.get("checked_tables")
-	db_encrypt_data = encryption(db_credential)
+	# db_encrypt_data = encryption(db_credential)
 	selected_tables = checked_tables.split(",")
 	user_id = 1
-	# create_db = sources.objects.create(db_credential = db_credential, selected_tables = checked_tables, user_id = user_id)
+	# create_db = sources.objects.create(db_credential = source_details, selected_tables = checked_tables, user_id = user_id)
 	# source_id = create_db.source_id
-	driver_name = db_credential['driver_name']
-	server_name = db_credential['server_name']
-	database_name = db_credential['database_name']
-	port = db_credential['port']
-	user_name = db_credential['user_name']
-	password = db_credential['password']
 	for table in selected_tables:
-		select_table = connectors(driver_name = driver_name, server_name = server_name, database_name = 
-	database_name, port = port, user_name = user_name, password = password).get_selected_tables(table)
+		select_table = connectors(driver_name = db_credential['driver_name'], server_name = db_credential['server_name'], database_name = 
+	db_credential['database_name'], port = db_credential['port'], user_name = db_credential['user_name'], password = db_credential['password']).get_selected_tables(table)
 		df = pd.DataFrame(select_table.fetchall())
 		df = changeDateFormat(df)
 		# parquet_name = f'{table}.parquet'
@@ -128,5 +143,6 @@ def getTableData(request):
 
 def getSource(request):
 	source_data = sources.objects.all().values()
-	print(source_data)
 	return render(request,"source_db.html",{'source_data':source_data})
+
+

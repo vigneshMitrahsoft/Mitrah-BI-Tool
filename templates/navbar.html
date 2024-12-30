@@ -3,6 +3,7 @@
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.js"></script>
 	</head>
 	<body>
 		<nav class="navbar navbar-expand-lg navbar-light bg-primary fixed-top" style ="width:100%; height: 80px;" >
@@ -210,7 +211,7 @@
 				var port = document.getElementById('port').value;
 				var user_name = document.getElementById('username').value;
 				var password = document.getElementById('password').value;
-				data ={
+				connection_data ={
 					'driver_name':driver_name,
 					'server_name':server_name,
 					'database_name':db_name,
@@ -218,7 +219,22 @@
 					'user_name':user_name,
 					'password':password
 				}
-				var valuee = $('#source_details').val(JSON.stringify(data));
+				
+				dbconnection_data = JSON.stringify(connection_data)
+				const iv = CryptoJS.lib.WordArray.random(16);
+				const secretKey = 'navissmith010701';
+				const encrypted = CryptoJS.AES.encrypt(dbconnection_data, CryptoJS.enc.Utf8.parse(secretKey), {
+					iv: iv,
+					mode: CryptoJS.mode.CBC,
+					padding: CryptoJS.pad.Pkcs7
+				});
+				data =  {
+					ciphertext: encrypted.toString(),
+					iv: iv.toString(CryptoJS.enc.Base64),
+				};
+				var source_data_field = $('#source_details').val(JSON.stringify(data));
+				console.log("source--->",source_data_field);
+				console.log("encrypted data---->",data);
 				$.ajax({url: "/showtables",data:data,type:'POST', success: function(response){
 				$('#dbFromModal').modal('hide');
 				$('#dbForm')[0].reset();

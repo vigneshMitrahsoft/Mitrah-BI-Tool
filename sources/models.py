@@ -3,8 +3,8 @@ from django.db import models
 
 class sources(models.Model):
 	source_id = models.BigAutoField(primary_key=True)
-	db_credential = models.CharField(max_length=200)
-	selected_tables = models.CharField(max_length=500)
+	db_credential = models.TextField()
+	selected_tables = models.TextField()
 	user_id = models.IntegerField(null=True)
 	ct_dt = models.DateTimeField(default = datetime.now)
 	ct_id = models.IntegerField(default=1)
