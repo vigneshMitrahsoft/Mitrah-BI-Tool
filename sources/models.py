@@ -13,3 +13,12 @@ class sources(models.Model):
 
 	class Meta:
 		db_table = 'sources'
+
+class reports(models.Model):
+	report_id = models.BigAutoField(primary_key=True)
+	report_name = models.CharField(max_length=100)
+	source_id = models.IntegerField()
+	chart_details = models.TextField()
+
+	class Meta:
+		db_table = 'reports'

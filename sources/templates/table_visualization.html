@@ -23,6 +23,9 @@
 					<thead class ="thead-light"><tr id ="table_header"></tr></thead>
 					<tbody id ="table-data"><tr></tr></tbody>
 				</table>
+				<div id="chart_data" style="visibility:hidden">
+					<img src ="data:image/png;base64,{{ url }}" height="500px"  width="750px">
+				</div>
 			</div>
 			<div class="col-2" style="border:2px solid #e9ecef;padding-left: 0px;padding-right: 0px;overflow-x:auto;">
 				<!-- <div class="list-group list-group-flush d-flex flex-row" style="border-bottom:2px solid #e9ecef"> -->
@@ -139,9 +142,11 @@
 		});
 		$('#chart_button').click(function(){
 			$('#table_data').hide();
+			$('#chart_data').show();
 		});
 		$('#table_button').click(function(){
 			$('#table_data').show();
+			$('#chart_data').hide();
 		});
 	</script>
 </html>

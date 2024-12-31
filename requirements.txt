@@ -8,3 +8,4 @@ pymysql
 psycopg
 fastparquet
 djangorestframework
+pycryptodome

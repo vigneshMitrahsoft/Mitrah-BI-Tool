@@ -14,5 +14,7 @@ urlpatterns = [
     path("gettables", Sources.getTables),
     path("getdata", Sources.getData),
     path("showtables", Sources.showTables),
-    path("showsheets", Sources.showSheets)
+    path("showsheets", Sources.showSheets),
+    path("barchart/<int:id>", views.barChart),
+    path("piechart/<int:id>",views.pieChart)
 ]

@@ -1,15 +1,21 @@
-from builtins import str
+import os
+import io
+import base64
 import json
+import urllib
+import datetime
+from datetime import datetime
+from builtins import str
 from django.http import  JsonResponse
 from django.shortcuts import redirect, render
 import pandas as pd
 from .models import sources
 from main.connectors import connectors
-from cryptography.fernet import Fernet
-import os
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 from base64 import b64decode
+import matplotlib.pyplot as plt
+
 
 def decryptDbCredential(data):
 	def decrypt_data(encrypted_data, secret_key):
@@ -72,18 +78,12 @@ def changeDateFormat(data_frame):
 	# data_frame['ModifiedDate'] = format(data_frame['ModifiedDate'], 'dd/mm/yyyy')
 
 	return data_frame
-# def encryption(data):
-# 	key = Fernet.generate_key()
-# 	cipher_text = Fernet(key)
-# 	cipher_text = cipher_text.encrypt(str(data).encode())
-# 	return cipher_text
 
 def sourceRecords(request):
 	source_details = request.POST.get("source_details")
 	source_details = json.loads(source_details)
 	db_credential = decryptDbCredential(source_details)
 	checked_tables = request.POST.get("checked_tables")
-	# db_encrypt_data = encryption(db_credential)
 	selected_tables = checked_tables.split(",")
 	user_id = 1
 	# create_db = sources.objects.create(db_credential = source_details, selected_tables = checked_tables, user_id = user_id)
@@ -144,5 +144,65 @@ def getTableData(request):
 def getSource(request):
 	source_data = sources.objects.all().values()
 	return render(request,"source_db.html",{'source_data':source_data})
+
+def barChart(request,id):
+	source_id = id
+	path = f'assest/parquet_files/source_{source_id}'
+	dir_list = os.listdir(path)
+	table_name = 'HumanResources.vJobCandidateEducation.parquet'
+	if  table_name in dir_list:
+		parquet_file_path = f'{path}/{table_name}'
+		data = pd.read_parquet(parquet_file_path)
+		# column_values = data['Edu.Level']
+		column_counts = data.pivot_table(columns = ['Edu.Level'], aggfunc = 'size').to_dict()
+		x_values = [key for key in column_counts]
+		y_values = [column_counts[key] for key in column_counts]
+		color = ['yellow','grey','black']
+		bar_chart = plt.bar(x_values, y_values, color = color)
+		plt.title("Educational level")
+		plt.xlabel("Education Level")
+		plt.ylabel("count")
+		plt.legend((bar_chart),(x_values))
+		# plt.legend()
+		fig = plt.gcf()
+		buf =  io.BytesIO()
+		plt.savefig(buf, format = 'png')
+		buf.seek(0)
+		string = base64.b64encode(buf.read())
+		url = urllib.parse.quote(string)
+		result = {'report_type':'Bar','aggregate_function':'count','y_column':'*','x_column':'Edu.Level'}
+		return render(request,"source_db.html", {'url':url})
+	
+def pieChart(request,id):
+	source_id = id
+	path = f'assest/parquet_files/source_{source_id}'
+	dir_list = os.listdir(path)
+	table_name = 'HumanResources.vJobCandidateEducation.parquet'
+	if  table_name in dir_list:
+		parquet_file_path = f'{path}/{table_name}'
+		data = pd.read_parquet(parquet_file_path)
+		column_counts = data.pivot_table(columns = ['Edu.StartDate'], aggfunc = 'size').to_dict()
+		chart_name = [key for key in column_counts]
+		individual_chart_count = [column_counts[key] for key in column_counts]
+		# overall_total_count = data.shape[0]
+		# percentage = []
+		# for chart_count in individual_chart_count:
+		# 	individual_percentage = (chart_count *100.00)/overall_total_count
+		# 	percentage += [individual_percentage]
+		pie_chart = plt.pie(individual_chart_count, labels = chart_name, autopct='%1.1f%%', shadow = True)
+		fig = plt.gcf()
+		buf = io.BytesIO()
+		fig.savefig(buf, format = 'png')
+		# fig.savefig('assest/images/testsample.png')        //for save the image into specific location
+		buf.seek(0)
+		string = base64.b64encode(buf.read())
+		url = urllib.parse.quote(string)
+		return render(request,"source_db.html", {'url':url})
+		
+		
+
+
+
+	
 
 
