@@ -15,26 +15,59 @@
 	<body style="border:2px solid #e9ecef;margin-top:50px;">
 		<div>{% include "navbar.html" %}</div>
 		<div class="d-flex w-100 mh-100 pt-3 pr-3 pl-3" style="column-gap:5px;">
-			<div class="col-2" style="border:2px solid #e9ecef">
-				<p> Properties Fields</p>
-			</div>
-			<div class="col-8" style="border:2px solid #e9ecef;overflow-x:auto; height:87vh;padding:0px;" id="data_visual">
-				<table class="table table-sm table-bordered w-100" id ="table_data">
-					<thead class ="thead-light"><tr id ="table_header"></tr></thead>
-					<tbody id ="table-data"><tr></tr></tbody>
-				</table>
-				<div id="chart_data" style="visibility:hidden">
-					<img src ="data:image/png;base64,{{ url }}" height="500px"  width="750px">
+			<div class="col-2" style="border:2px solid #e9ecef;padding-left: 0px;padding-right: 0px;overflow-x:auto">
+				<!-- <div class="list-group list-group-flush d-flex flex-row" style="border-bottom:2px solid #e9ecef"> -->
+					<div class="overflow-x:hidden">
+						<button type="button" class="btn btn-outline-secondary btn-sm" id="table_button"><i class="fas fa-table "></i></button>
+						<button type="button" class="btn btn-outline-secondary btn-sm" id="chart_button"><i class="fas fa-chart-pie "></i></button>
+					</div>
+				<!-- </div> -->
+				<div class="table_section"style="overflow-x:auto">
+					<h5>Tables</h5>
+					<div class="list-group list-group-flush" id="table-list">
+					</div>
+					<!-- <div id="accordion">
+						<div class="card">
+						  <div class="card-header">
+							
+						  </div>
+						  
+						</div>
+					</div> -->
 				</div>
 			</div>
-			<div class="col-2" style="border:2px solid #e9ecef;padding-left: 0px;padding-right: 0px;overflow-x:auto;">
-				<!-- <div class="list-group list-group-flush d-flex flex-row" style="border-bottom:2px solid #e9ecef"> -->
-					<button type="button" class="btn btn-outline-secondary btn-sm" id ="table_button"><i class="fas fa-table "></i></button>
-					<button type="button" class="btn btn-outline-secondary btn-sm" id ="chart_button"><i class="fas fa-chart-pie "></i></button>
-					
-				<!-- </div> -->
-				<h5>Tables</h5>
-				<div class="list-group list-group-flush" id="table-list">
+			<div class="col-2" style="border:2px solid #e9ecef">
+				<p> Properties Fields</p>
+				<form>
+					<div class="form-group">
+					  <label for="x-axis">X-axis</label>
+					  <select class="form-control" id="x_axis_dropdown">
+						<option> Choose Column</option>
+					  </select>
+					</div>
+					<div class="form-group">
+						<label for="y-axis">Y-axis</label>
+						<input type="text" class="form-control" id="y_axis" placeholder="1">
+					  </div>
+					<div class="form-group">
+						<label for="aggregate">Aggregate Functions</label>
+					  <select class="form-control" id="aggregate_column_dropdown">
+						<option>Count</option>
+						<option>Average</option>
+						<option>Sum</option>
+						<option>Max</option>
+						<option>Min</option>
+					  </select>
+					</div>
+				  </form>
+			</div>
+			<div class="col-8" style="border:2px solid #e9ecef;overflow-x:auto; height:87vh;padding:0px;" id="data_visual">
+				<table class="table table-sm table-bordered w-100" id="table_data">
+					<thead class="thead-light"><tr id="table_header"></tr></thead>
+					<tbody id="table-data"><tr></tr></tbody>
+				</table>
+				<div id="chart_data" style="visibility:hidden">
+					<img src="data:image/png;base64,{{ url }}" height="500px"  width="750px">
 				</div>
 			</div>
 		</div>	
@@ -66,10 +99,17 @@
 		function render_table_headers(column_list) {
 			$('#table_header').empty();
 			table_header = '';
+			var column_dropdown = '';
+			var list_column_name ='';
 			for(index in column_list){
-				table_header += '<th scope="col">'+column_list[index]+'</th>'; 
+				table_header += '<th scope="col">'+column_list[index]+'</th>';
+				column_dropdown +='<option>'+column_list[index]+'</option>';
+				list_column_name +='<p>'+column_list[index]+'</p>';
+				
 			}
 			$('#table_header').append(table_header);
+			$('#x_axis_dropdown').append(column_dropdown);
+			return list_column_name;
 		}
 		function render_table_body(table_data) {
 			var table_record ='';
@@ -89,7 +129,12 @@
 			for(index in table_names) {
 				var isActive = index == 0 ? 'active' : '';
 				var table_name = "'"+table_names[index]+"'";
-				table_elements += '<button type="button" class="list-group-item list-group-item-action '+isActive+'" onClick="getTableData('+table_name+')">'+table_names[index]+'</button>';
+				var table_index = table_names[index]; 
+        		var table_name_for_id = table_index.replace(/\./g, "_"); 
+				// table_elements += '<button type="button" class="list-group-item list-group-item-action '+isActive+'" onClick="getTableData('+table_name+')">'+table_names[index]+'</button><div id ="'+table_name_for_id+'"></div>';
+				table_elements += '<button type="button" class="list-group-item list-group-item-action '+isActive+'" onClick="getTableData('+table_name+')" data-toggle="collapse" data-target="#'+table_name_for_id+'">'+table_names[index]+'</button><div class="collapse" id="'+table_name_for_id+'"></div>';
+
+
 			}
 			$('#table-list').append(table_elements);
 		}
@@ -103,9 +148,13 @@
 			current_page = 1;
 			still_has_data = true;
 		});
-
 		function getTableData(table_name){
-			render_table_headers(table_list[table_name]);
+			$('#x_axis_dropdown').empty();
+			render_table_headers(table_list[table_name])
+			var column_field_name= table_name.replace(/\./g, "_");
+			$('#'+column_field_name).empty(); 
+			var table_column_list_name = render_table_headers(table_list[table_name]);
+			$('#'+ column_field_name).append(table_column_list_name);
 			var data = {
 				'source_id': source_id,
 				'table_name': table_name,

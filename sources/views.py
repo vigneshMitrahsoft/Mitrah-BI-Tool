@@ -88,25 +88,26 @@ def sourceRecords(request):
 	user_id = 1
 	# create_db = sources.objects.create(db_credential = source_details, selected_tables = checked_tables, user_id = user_id)
 	# source_id = create_db.source_id
-	for table in selected_tables:
-		select_table = connectors(driver_name = db_credential['driver_name'], server_name = db_credential['server_name'], database_name = 
-	db_credential['database_name'], port = db_credential['port'], user_name = db_credential['user_name'], password = db_credential['password']).get_selected_tables(table)
-		df = pd.DataFrame(select_table.fetchall())
-		df = changeDateFormat(df)
-		# parquet_name = f'{table}.parquet'
-		# path_directory = "assest/parquet_files"
-		# source_path_directory = f"assest/parquet_files/source_{source_id}"
-		# if not os.path.exists(path_directory):
-		# 	os.makedirs(path_directory)
-		# elif os.path.exists(path_directory) and not os.path.exists(source_path_directory):
-		# 	os.makedirs(source_path_directory)
-		# 	if os.path.exists(path_directory) and os.path.exists(source_path_directory):
-		# 		file_path = f'{source_path_directory}/{parquet_name}'
-		# 		df.to_parquet(file_path)
-		# else:
-		# 	file_path = f'{source_path_directory}/{parquet_name}'
-		# 	df.to_parquet(file_path)
-	source_id = 35
+	# source_id = 33
+	# for table in selected_tables:
+	# 	select_table = connectors(driver_name = db_credential['driver_name'], server_name = db_credential['server_name'], database_name = 
+	# db_credential['database_name'], port = db_credential['port'], user_name = db_credential['user_name'], password = db_credential['password']).get_selected_tables(table)
+	# 	df = pd.DataFrame(select_table.fetchall())
+	# 	df = changeDateFormat(df)
+	# 	parquet_name = f'{table}.parquet'
+	# 	path_directory = "assest/parquet_files"
+	# 	source_path_directory = f"assest/parquet_files/source_{source_id}"
+	# 	if not os.path.exists(path_directory):
+	# 		os.makedirs(path_directory)
+	# 	elif os.path.exists(path_directory) and not os.path.exists(source_path_directory):
+	# 		os.makedirs(source_path_directory)
+	# 		if os.path.exists(path_directory) and os.path.exists(source_path_directory):
+	# 			file_path = f'{source_path_directory}/{parquet_name}'
+	# 			df.to_parquet(file_path)
+	# 	else:
+	# 		file_path = f'{source_path_directory}/{parquet_name}'
+	# 		df.to_parquet(file_path)
+	# source_id = 35
 	return redirect(f"/source/{source_id}")
 def sourceData(request,id):
 	try:
@@ -198,11 +199,27 @@ def pieChart(request,id):
 		string = base64.b64encode(buf.read())
 		url = urllib.parse.quote(string)
 		return render(request,"source_db.html", {'url':url})
-		
-		
-
-
-
 	
-
-
+def lineChart(request,id):
+	source_id = id
+	path = f'assest/parquet_files/source_{source_id}'
+	dir_list = os.listdir(path)
+	table_name = 'HumanResources.vJobCandidateEducation.parquet'
+	if  table_name in dir_list:
+		parquet_file_path = f'{path}/{table_name}'
+		data = pd.read_parquet(parquet_file_path)
+		column_counts = data.pivot_table(columns = ['Edu.StartDate'], aggfunc = 'size').to_dict()
+		chart_name = [key for key in column_counts]
+		individual_chart_count = [column_counts[key] for key in column_counts]
+		line_chart = plt.plot(chart_name, individual_chart_count)
+		fig = plt.gcf()
+		buf = io.BytesIO()
+		fig.savefig(buf, format = 'png')
+		buf.seek(0)
+		string = base64.b64encode(buf.read())
+		url = urllib.parse.quote(string)
+		return render(request,"source_db.html", {'url':url})
+	
+def reports(request,id):
+	source_id = id
+	pie_chart = pieChart(id)
