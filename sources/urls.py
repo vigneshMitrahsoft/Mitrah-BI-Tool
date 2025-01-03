@@ -15,7 +15,7 @@ urlpatterns = [
     path("getdata", Sources.getData),
     path("showtables", Sources.showTables),
     path("showsheets", Sources.showSheets),
-    # path("report/<int:id>", views.reports),
+    path("report/<int:id>", views.report),
     path("barchart/<int:id>", views.barChart),
     path("piechart/<int:id>",views.pieChart),
     path("linechart/<int:id>", views.lineChart)

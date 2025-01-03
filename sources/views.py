@@ -3,13 +3,11 @@ import io
 import base64
 import json
 import urllib
-import datetime
-from datetime import datetime
 from builtins import str
 from django.http import  JsonResponse
 from django.shortcuts import redirect, render
 import pandas as pd
-from .models import sources
+from .models import sources,reports
 from main.connectors import connectors
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
@@ -88,7 +86,6 @@ def sourceRecords(request):
 	user_id = 1
 	# create_db = sources.objects.create(db_credential = source_details, selected_tables = checked_tables, user_id = user_id)
 	# source_id = create_db.source_id
-	# source_id = 33
 	# for table in selected_tables:
 	# 	select_table = connectors(driver_name = db_credential['driver_name'], server_name = db_credential['server_name'], database_name = 
 	# db_credential['database_name'], port = db_credential['port'], user_name = db_credential['user_name'], password = db_credential['password']).get_selected_tables(table)
@@ -107,7 +104,7 @@ def sourceRecords(request):
 	# 	else:
 	# 		file_path = f'{source_path_directory}/{parquet_name}'
 	# 		df.to_parquet(file_path)
-	# source_id = 35
+	source_id = 35
 	return redirect(f"/source/{source_id}")
 def sourceData(request,id):
 	try:
@@ -148,31 +145,34 @@ def getSource(request):
 
 def barChart(request,id):
 	source_id = id
+	print("sourceid---->",source_id)
 	path = f'assest/parquet_files/source_{source_id}'
 	dir_list = os.listdir(path)
 	table_name = 'HumanResources.vJobCandidateEducation.parquet'
 	if  table_name in dir_list:
 		parquet_file_path = f'{path}/{table_name}'
 		data = pd.read_parquet(parquet_file_path)
-		# column_values = data['Edu.Level']
 		column_counts = data.pivot_table(columns = ['Edu.Level'], aggfunc = 'size').to_dict()
 		x_values = [key for key in column_counts]
 		y_values = [column_counts[key] for key in column_counts]
 		color = ['yellow','grey','black']
-		bar_chart = plt.bar(x_values, y_values, color = color)
-		plt.title("Educational level")
-		plt.xlabel("Education Level")
-		plt.ylabel("count")
-		plt.legend((bar_chart),(x_values))
-		# plt.legend()
-		fig = plt.gcf()
-		buf =  io.BytesIO()
-		plt.savefig(buf, format = 'png')
-		buf.seek(0)
-		string = base64.b64encode(buf.read())
-		url = urllib.parse.quote(string)
-		result = {'report_type':'Bar','aggregate_function':'count','y_column':'*','x_column':'Edu.Level'}
-		return render(request,"source_db.html", {'url':url})
+		# bar_chart = plt.bar(x_values, y_values, color = color)
+		# plt.title("Educational level")
+		# plt.xlabel("Education Level")
+		# plt.ylabel("count")
+		# plt.legend((bar_chart),(x_values))
+		# # plt.legend()
+		# fig = plt.gcf()
+		# buf =  io.BytesIO()
+		# plt.savefig(buf, format = 'png')
+		# buf.seek(0)
+		# string = base64.b64encode(buf.read())
+		# url = urllib.parse.quote(string)
+		# result = {'report_type':'Bar','aggregate_function':'count','y_column':'*','x_column':'Edu.Level','level':'Edu.level'}
+		# return render(request,"source_db.html", {'url':url})
+		# return result,url
+	# return render(request,"visual_sample.html", {'x_values':x_values,'y_values':y_values})	
+	return JsonResponse({'x_axis':x_values,'y_axis':y_values})
 	
 def pieChart(request,id):
 	source_id = id
@@ -198,7 +198,8 @@ def pieChart(request,id):
 		buf.seek(0)
 		string = base64.b64encode(buf.read())
 		url = urllib.parse.quote(string)
-		return render(request,"source_db.html", {'url':url})
+		# return render(request,"source_db.html", {'url':url})
+		return url
 	
 def lineChart(request,id):
 	source_id = id
@@ -211,15 +212,31 @@ def lineChart(request,id):
 		column_counts = data.pivot_table(columns = ['Edu.StartDate'], aggfunc = 'size').to_dict()
 		chart_name = [key for key in column_counts]
 		individual_chart_count = [column_counts[key] for key in column_counts]
-		line_chart = plt.plot(chart_name, individual_chart_count)
-		fig = plt.gcf()
-		buf = io.BytesIO()
-		fig.savefig(buf, format = 'png')
-		buf.seek(0)
-		string = base64.b64encode(buf.read())
-		url = urllib.parse.quote(string)
-		return render(request,"source_db.html", {'url':url})
+		# line_chart = plt.plot(chart_name, individual_chart_count)
+		# fig = plt.gcf()
+		# buf = io.BytesIO()
+		# fig.savefig(buf, format = 'png')
+		# buf.seek(0)
+		# string = base64.b64encode(buf.read())
+		# url = urllib.parse.quote(string)
+		# return render(request,"source_db.html", {'url':url})
+		# return url
+		# return render(request,"visual_sample.html", {'x_axis':chart_name,'y_axis':individual_chart_count})
+	return JsonResponse({'x_axis':chart_name,'y_axis':individual_chart_count})
+
 	
-def reports(request,id):
+def report(request,id):
 	source_id = id
-	pie_chart = pieChart(id)
+	report_name = "user35"
+	chart_details =[]
+	url =[]
+	bar_chart = barChart(request,source_id)
+	pie_chart = pieChart(request,source_id)
+	line_chart = lineChart(request,source_id)
+	url.append(bar_chart[1])
+	url.append(pie_chart)
+	url.append(line_chart)
+	chart_details.append(bar_chart[0])
+	print("chart_value---->",chart_details)
+	# reports.objects.create(report_name = report_name, source_id = source_id, chart_details = chart_details)
+	return render(request,"source_db.html", {'url':url})

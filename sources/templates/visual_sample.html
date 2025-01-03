@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<title>Testing</title>
+</head>
+<body>
+	<h5>welcome</h5>
+	<p id ="x_value"> {{ x_values }}</p>
+	<p id ="y_value"> {{ y_values }}</p>
+	<div>
+		<canvas id="myChart"></canvas>
+	</div>
+</body>
+<script>
+	const ctx = document.getElementById('myChart');
+	var label = document.getElementById('x_value').innerHTML;
+	var data = document.getElementById('y_value').innerHTML;;
+	console.log("label--->",label);
+	new Chart(ctx, {
+	  type: 'bar',
+	  data: {
+		labels:label,
+		datasets: [{
+		  label: '# of Votes',
+		  data: data,
+		  borderWidth: 1
+		}]
+	  },
+	  options: {
+		scales: {
+		  y: {
+			beginAtZero: true
+		  }
+		}
+	  }
+	});
+</script>
+</html>

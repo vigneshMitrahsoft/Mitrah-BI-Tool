@@ -34,6 +34,9 @@
 		{% endfor %}
 	</table>
 	<p id="para" ></p>
-	<img src ="data:image/png;base64,{{ url }}" height="500px"  width="750px">
+	<!-- <img src ="data:image/png;base64,{{ url }}" height="500px"  width="750px"> -->
+	{% for value in url %}
+	<img src ="data:image/png;base64,{{ value }}" height="500px"  width="750px">
+	{% endfor %}
 </body>
 </html>
