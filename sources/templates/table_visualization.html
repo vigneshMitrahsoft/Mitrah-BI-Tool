@@ -5,7 +5,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<title>visualization</title>
 		{% include "header.html" %}
-		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+		<!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
 		<style>
 			.list-group-item.active {
 				background-color: #b0b3b7;
@@ -15,19 +15,27 @@
 				padding:0px;
 				text-align:left;
 			}
+			#data_visual{
+				border:2px solid #e9ecef;
+				overflow-x:auto;
+				height:87vh;
+				padding:0px;
+			}
+			#table_list_container{
+				border:2px solid #e9ecef;
+				padding-left: 0px;
+				padding-right:0px;
+				overflow-x:auto;
+			}
 			body{
 				font-size:15px;
 			}
-			/* .bar_chartt{
-				width:100px;
-				height:100px;
-			} */
 		</style>
 	</head>
 	<body style="margin-top:50px;">
 		<div>{% include "navbar.html" %}</div>
 		<div class="d-flex w-100 mh-100 pt-3 pr-3 pl-3" style="column-gap:5px;">
-			<div class="col-3" style="border:2px solid #e9ecef;padding-left: 0px;padding-right: 0px;overflow-x:auto" id ="table_list_container">
+			<div class="col-3" id ="table_list_container">
 				<!-- <div class="list-group list-group-flush d-flex flex-row" style="border-bottom:2px solid #e9ecef"> -->
 					<div class="overflow-x:hidden" id ="chart_area">
 						<button type="button" class="btn btn-outline-secondary btn-sm" id="table_button"><i class="fas fa-table "></i></button>
@@ -69,13 +77,16 @@
 					<canvas id ="bar_chartt" width="500" height="500"></canvas>
 				</div> -->
 			</div>
-			<div class="col-7" style="border:2px solid #e9ecef;overflow-x:auto; height:87vh;padding:0px;" id="data_visual">
+			<div class="col-7" id="data_visual">
 				<table class="table table-sm table-bordered w-100" id="table_data">
 					<thead class="thead-light"><tr id="table_header"></tr></thead>
 					<tbody id="table-data"><tr></tr></tbody>
 				</table>
-				<div id="chart_data" style="visibility:hidden" >
-					<canvas id ="bar_chart" style="width:500px;height:500px;"></canvas>	
+				<div id="chart_data" style="visibility:hidden" class="row">
+					<canvas id="bar_chart" class="col-6"></canvas>
+					<div class="col-5"><p>hlo there</p></div>
+					<canvas id="line_chart" class="col-6"></canvas>	
+					<canvas id="pie_chart" class="col-6"></canvas>
 				</div>
 			</div>
 		</div>	
@@ -150,7 +161,6 @@
 			$('.list-group-item.active').removeClass('active');
 			$(this).addClass('active');
 			$('#table-data').empty();
-
 			// resetting values
 			current_page = 1;
 			still_has_data = true;
@@ -168,7 +178,6 @@
 				'limit': limit,
 				'current_page': current_page
 			};
-
 			$.ajax({
 				url: "/getdata",
 				data: data,
@@ -181,7 +190,6 @@
 					}
 					if(still_has_data)
 						render_table_body(response.data);
-
 				}
 			});
 		}
@@ -200,13 +208,14 @@
 			$('#table_data').hide();
 			$('#chart_data').show();	
 			$('#chart_data').css({"visibility":"visible"});
-
 			$.ajax({
-				url:"/barchart/{{source_id}}",
+				url:"/report/{{source_id}}",
 				data:{'source_id':35},
 				type:'POST',
 				success: function(response){
 					barchart(response);
+					piechart(response);
+					linechart(response);
 				}
 			})
 		});
@@ -215,11 +224,10 @@
 			$('#chart_data').hide();
 		});
 		function barchart(response){
-			var x_values = response.x_axis;
-			var y_values = response.y_axis;
-			console.log("xval--->",x_values);
-			console.log("yval--->",y_values);
-			var id = "chart_data";
+			var x_values = response.bar_chart['x_axis'];
+			var y_values = response.bar_chart['y_axis'];
+			console.log("bar_x",x_values);
+			console.log("bar_y",y_values);
 			var ctx = document.getElementById('bar_chart'); 
 			new Chart(ctx, { 
 				type: 'bar', 
@@ -241,7 +249,55 @@
 				}
 				}
 			}); 
-
 		}
+		function piechart(response){
+			var pie_chart_result_data = response.pie_chart['count'];
+			var chart_column_name  = response.pie_chart['chart_name'];
+			// console.log("the values are-->",pie_chart_result_data);
+			// console.log("the values are-->",chart_column_name);
+			var ctx = document.getElementById('pie_chart'); 
+			new Chart(ctx, { 
+				type: 'pie', 
+				data:{
+					labels: chart_column_name,
+					datasets: [
+						{
+						label: 'Dataset 1',
+						data: pie_chart_result_data,
+						}
+					]
+				},
+				options: {
+				responsive: false,
+				}
+			}); 
+		}
+		function linechart(response){
+			var x_values = response.line_chart['x_axis'];
+			var y_values = response.line_chart['y_axis'];
+			console.log("line_x",x_values);
+			console.log("line_y",y_values);
+			var ctx = document.getElementById('line_chart'); 
+			new Chart(ctx, { 
+				type: 'line', 
+				data: { 
+				labels: x_values, 
+				datasets: [{ 
+					label: x_values, 
+					backgroundColor: 'rgb(255, 100, 200)', 
+					borderColor: 'rgb(55, 99, 132)', 
+					data: y_values, 
+				}] 
+				}, 
+				options: {
+				responsive: false,
+				scales: {
+				y: {
+					beginAtZero: true
+				}
+				}
+				}
+			}); 
+		}	
 	</script>
 </html>

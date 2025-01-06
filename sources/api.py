@@ -12,6 +12,45 @@ from sqlalchemy import create_engine
 from sqlalchemy.sql import text
 from .views import changeDateFormat
 
+def pieChart(request,id):
+		source_id = id
+		path = f'assest/parquet_files/source_{source_id}'
+		dir_list = os.listdir(path)
+		table_name = 'HumanResources.vJobCandidateEducation.parquet'
+		if  table_name in dir_list:
+			parquet_file_path = f'{path}/{table_name}'
+			data = pd.read_parquet(parquet_file_path)
+			column_counts = data.pivot_table(columns = ['Edu.StartDate'], aggfunc = 'size').to_dict()
+			chart_name = [key for key in column_counts]
+			individual_chart_count = [column_counts[key] for key in column_counts]
+			return {'chart_name':chart_name,'count':individual_chart_count}
+def barChart(request,id):
+		source_id = id
+		print("sourceid---->",source_id)
+		path = f'assest/parquet_files/source_{source_id}'
+		dir_list = os.listdir(path)
+		table_name = 'HumanResources.vJobCandidateEducation.parquet'
+		if  table_name in dir_list:
+			parquet_file_path = f'{path}/{table_name}'
+			data = pd.read_parquet(parquet_file_path)
+			column_counts = data.pivot_table(columns = ['Edu.Level'], aggfunc = 'size').to_dict()
+			x_values = [key for key in column_counts]
+			y_values = [column_counts[key] for key in column_counts]
+		return {'x_axis':x_values,'y_axis':y_values}
+
+def lineChart(request,id):
+	source_id = id
+	path = f'assest/parquet_files/source_{source_id}'
+	dir_list = os.listdir(path)
+	table_name = 'HumanResources.vJobCandidateEducation.parquet'
+	if  table_name in dir_list:
+		parquet_file_path = f'{path}/{table_name}'
+		data = pd.read_parquet(parquet_file_path)
+		column_counts = data.pivot_table(columns = ['Edu.StartDate'], aggfunc = 'size').to_dict()
+		chart_name = [key for key in column_counts]
+		individual_chart_count = [column_counts[key] for key in column_counts]
+	return {'x_axis':chart_name,'y_axis':individual_chart_count}
+
 class Sources(APIView):
 	@api_view(('GET',))
 	def get(self):
@@ -93,4 +132,38 @@ class Sources(APIView):
 				return JsonResponse({'error':"VALID CSV"})
 			else:
 				return JsonResponse({'error':"Invalid Format"})
-        
+	@api_view(('POST',))
+	def brChart(request,id):
+		source_id = id
+		print("sourceid---->",source_id)
+		path = f'assest/parquet_files/source_{source_id}'
+		dir_list = os.listdir(path)
+		table_name = 'HumanResources.vJobCandidateEducation.parquet'
+		if  table_name in dir_list:
+			parquet_file_path = f'{path}/{table_name}'
+			data = pd.read_parquet(parquet_file_path)
+			column_counts = data.pivot_table(columns = ['Edu.Level'], aggfunc = 'size').to_dict()
+			x_values = [key for key in column_counts]
+			y_values = [column_counts[key] for key in column_counts]
+		return JsonResponse({'x_axis':x_values,'y_axis':y_values})
+	@api_view(('POST',))
+	def piChart(request,id):
+		source_id = id
+		path = f'assest/parquet_files/source_{source_id}'
+		dir_list = os.listdir(path)
+		table_name = 'HumanResources.vJobCandidateEducation.parquet'
+		if  table_name in dir_list:
+			parquet_file_path = f'{path}/{table_name}'
+			data = pd.read_parquet(parquet_file_path)
+			column_counts = data.pivot_table(columns = ['Edu.StartDate'], aggfunc = 'size').to_dict()
+			chart_name = [key for key in column_counts]
+			individual_chart_count = [column_counts[key] for key in column_counts]
+			return JsonResponse({'chart_name':chart_name,'count':individual_chart_count})
+
+	@api_view(('POST',))
+	def report(request,id):
+		source_id = id
+		bar_chart_value = barChart(request,source_id)
+		pie_chart_value = pieChart(request,source_id)
+		line_chart_value = lineChart(request,source_id)
+		return JsonResponse({'pie_chart':pie_chart_value,'bar_chart':bar_chart_value,'line_chart':line_chart_value})

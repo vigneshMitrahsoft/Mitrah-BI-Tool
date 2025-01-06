@@ -15,8 +15,11 @@ urlpatterns = [
     path("getdata", Sources.getData),
     path("showtables", Sources.showTables),
     path("showsheets", Sources.showSheets),
-    path("report/<int:id>", views.report),
-    path("barchart/<int:id>", views.barChart),
-    path("piechart/<int:id>",views.pieChart),
-    path("linechart/<int:id>", views.lineChart)
+    # path("barchart/<int:id>",Sources.barChart),
+    # path("piechart/<int:id>",Sources.pieChart),
+    path("report/<int:id>", Sources.report),
+    path("viewsreport/<int:id>", views.report),
+    path("viewsbarchart/<int:id>", views.barChart),
+    path("viewspiechart/<int:id>",views.pieChart),
+    path("linechart/<int:id>", views.lineChart),
 ]
