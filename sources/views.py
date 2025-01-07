@@ -86,6 +86,7 @@ def sourceRecords(request):
 	user_id = 1
 	# create_db = sources.objects.create(db_credential = source_details, selected_tables = checked_tables, user_id = user_id)
 	# source_id = create_db.source_id
+	# source_id = 40
 	# for table in selected_tables:
 	# 	select_table = connectors(driver_name = db_credential['driver_name'], server_name = db_credential['server_name'], database_name = 
 	# db_credential['database_name'], port = db_credential['port'], user_name = db_credential['user_name'], password = db_credential['password']).get_selected_tables(table)
@@ -240,3 +241,29 @@ def report(request,id):
 	print("chart_value---->",chart_details)
 	# reports.objects.create(report_name = report_name, source_id = source_id, chart_details = chart_details)
 	return render(request,"source_db.html", {'url':url})
+
+def refresh(request,id):
+	source_id = id
+	source_file = sources.objects.get(source_id=source_id)
+	source_tables = source_file.selected_tables.split(",")
+	print("selec",source_tables)
+	db_credential_data = source_file.db_credential
+	db_credential_data = db_credential_data.replace("'", "\"")
+	source_file = json.loads(db_credential_data)
+	db_credential = decryptDbCredential(source_file)
+	print("source-->",db_credential.get('server_name'))
+	connector = connectors(**db_credential)
+	for table in source_tables:
+		parquet_file_path = f'assest/parquet_files/source_{source_id}/{table}.parquet'
+		target_table = pd.read_parquet(parquet_file_path)
+		target_table_result = target_table.to_string()
+		loaded_df = connector.incremental_load(target_table,table)
+		if loaded_df is not None:
+			print("loader block exec",parquet_file_path)
+			loaded_df.to_parquet(parquet_file_path, index=False)
+
+def test(request,id):
+	df = pd.read_parquet("assest/parquet_files/source_40/emp.alien.parquet")
+	print("testing---->")
+	print(df)
+

@@ -18,8 +18,8 @@ urlpatterns = [
     # path("barchart/<int:id>",Sources.barChart),
     # path("piechart/<int:id>",Sources.pieChart),
     path("report/<int:id>", Sources.report),
-    path("viewsreport/<int:id>", views.report),
+    path("viewsreport/<int:id>", views.refresh),
     path("viewsbarchart/<int:id>", views.barChart),
     path("viewspiechart/<int:id>",views.pieChart),
-    path("linechart/<int:id>", views.lineChart),
+    path("linechart/<int:id>", views.test),
 ]
