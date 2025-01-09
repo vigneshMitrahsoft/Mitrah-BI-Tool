@@ -74,38 +74,73 @@ def changeDateFormat(data_frame):
 		if data_frame[col].dtype == 'datetime64[ns]':
 			data_frame[col] = data_frame[col].dt.strftime('%Y-%m-%d %H:%M:%S')
 	# data_frame['ModifiedDate'] = format(data_frame['ModifiedDate'], 'dd/mm/yyyy')
-
 	return data_frame
-
+def changePandasDatatypes(source,column_and_dtypes):
+	type_mapping = {
+    'int': 'Int64',
+    'bigint': 'Int64',
+	'integer':'Int64',
+    'float': 'float64',
+    'decimal': 'float64',
+    'varchar': 'string',
+    'nvarchar': 'string',
+    'datetime': 'datetime64[ns]',
+    'date': 'datetime64[ns]',
+    'bit': 'bool',
+    'char': 'string'
+	}
+	for value in column_and_dtypes:
+		column_name = value[0]
+		column_type = value[1]
+		if column_name in source.columns:
+			if column_type in type_mapping:
+				source[column_name] = source[column_name].astype(type_mapping[column_type])
+			elif column_type =="timestamp with time zone":
+				source[column_name] = pd.to_datetime(source[column_name], errors='coerce')
+				# if source[column_name].dt.tz is None:
+				# 	source[column_name] = source[column_name].dt.tz_localize('UTC')
+				# source[column_name] = source[column_name].dt.tz_convert('UTC')
+				source[column_name] = source[column_name].dt.tz_localize(None)
+				source[column_name] = source[column_name].astype("datetime64[ns]")
+	# column_data_types = ['string' if dtype == 'object' else dtype for dtype in source]
+	# Print the DataFrame's data types after conversion
+	print("After source dtypes-->", source)
+	return source
 def sourceRecords(request):
 	source_details = request.POST.get("source_details")
 	source_details = json.loads(source_details)
 	db_credential = decryptDbCredential(source_details)
 	checked_tables = request.POST.get("checked_tables")
 	selected_tables = checked_tables.split(",")
-	user_id = 1
-	# create_db = sources.objects.create(db_credential = source_details, selected_tables = checked_tables, user_id = user_id)
-	# source_id = create_db.source_id
+	# user_id = 1
+	# # create_db = sources.objects.create(db_credential = source_details, selected_tables = checked_tables, user_id = user_id)
+	# # source_id = create_db.source_id
+	source_id = 13
+	connector = connectors(**db_credential)
+	for table in selected_tables:
+		select_table = connectors(driver_name = db_credential['driver_name'], server_name = db_credential['server_name'], database_name = 
+	db_credential['database_name'], port = db_credential['port'], user_name = db_credential['user_name'], password = db_credential['password']).get_selected_tables(table)
+		select_table = connector.get_selected_tables(table)
+		df = pd.DataFrame(select_table.fetchall())
+		df = changeDateFormat(df)
+		column_name_with_dtype = connector.get_column_with_dtype(table)
+		column_and_dtypes = column_name_with_dtype.fetchall()
+		print("column with dtypes",column_and_dtypes)
+		df = changePandasDatatypes(df,column_and_dtypes)
+		parquet_name = f'{table}.parquet'
+		path_directory = "assest/parquet_files"
+		source_path_directory = f"assest/parquet_files/source_{source_id}"
+		if not os.path.exists(path_directory):
+			os.makedirs(path_directory)
+		elif os.path.exists(path_directory) and not os.path.exists(source_path_directory):
+			os.makedirs(source_path_directory)
+			if os.path.exists(path_directory) and os.path.exists(source_path_directory):
+				file_path = f'{source_path_directory}/{parquet_name}'
+				df.to_parquet(file_path)
+		else:
+			file_path = f'{source_path_directory}/{parquet_name}'
+			df.to_parquet(file_path)
 	# source_id = 40
-	# for table in selected_tables:
-	# 	select_table = connectors(driver_name = db_credential['driver_name'], server_name = db_credential['server_name'], database_name = 
-	# db_credential['database_name'], port = db_credential['port'], user_name = db_credential['user_name'], password = db_credential['password']).get_selected_tables(table)
-	# 	df = pd.DataFrame(select_table.fetchall())
-	# 	df = changeDateFormat(df)
-	# 	parquet_name = f'{table}.parquet'
-	# 	path_directory = "assest/parquet_files"
-	# 	source_path_directory = f"assest/parquet_files/source_{source_id}"
-	# 	if not os.path.exists(path_directory):
-	# 		os.makedirs(path_directory)
-	# 	elif os.path.exists(path_directory) and not os.path.exists(source_path_directory):
-	# 		os.makedirs(source_path_directory)
-	# 		if os.path.exists(path_directory) and os.path.exists(source_path_directory):
-	# 			file_path = f'{source_path_directory}/{parquet_name}'
-	# 			df.to_parquet(file_path)
-	# 	else:
-	# 		file_path = f'{source_path_directory}/{parquet_name}'
-	# 		df.to_parquet(file_path)
-	source_id = 35
 	return redirect(f"/source/{source_id}")
 def sourceData(request,id):
 	try:
@@ -242,28 +277,27 @@ def report(request,id):
 	# reports.objects.create(report_name = report_name, source_id = source_id, chart_details = chart_details)
 	return render(request,"source_db.html", {'url':url})
 
-def refresh(request,id):
-	source_id = id
-	source_file = sources.objects.get(source_id=source_id)
-	source_tables = source_file.selected_tables.split(",")
-	print("selec",source_tables)
-	db_credential_data = source_file.db_credential
-	db_credential_data = db_credential_data.replace("'", "\"")
-	source_file = json.loads(db_credential_data)
-	db_credential = decryptDbCredential(source_file)
-	print("source-->",db_credential.get('server_name'))
-	connector = connectors(**db_credential)
-	for table in source_tables:
-		parquet_file_path = f'assest/parquet_files/source_{source_id}/{table}.parquet'
-		target_table = pd.read_parquet(parquet_file_path)
-		target_table_result = target_table.to_string()
-		loaded_df = connector.incremental_load(target_table,table)
-		if loaded_df is not None:
-			print("loader block exec",parquet_file_path)
-			loaded_df.to_parquet(parquet_file_path, index=False)
+# def refresh(request,id):
+# 	source_id = id
+# 	source_file = sources.objects.get(source_id=source_id)
+# 	source_tables = source_file.selected_tables.split(",")
+# 	db_credential_data = source_file.db_credential
+# 	db_credential_data = db_credential_data.replace("'", "\"")
+# 	source_file = json.loads(db_credential_data)
+# 	db_credential = decryptDbCredential(source_file)
+# 	# print("source-->",db_credential.get('server_name'))
+# 	connector = connectors(**db_credential)
+# 	for table in source_tables:
+# 		parquet_file_path = f'assest/parquet_files/source_{source_id}/{table}.parquet'
+# 		target_table = pd.read_parquet(parquet_file_path)
+# 		# target_table_result = target_table.to_string()
+# 		loaded_df = connector.incremental_load(target_table,table)
+# 		if loaded_df is not None:
+# 			print("loader block exec",parquet_file_path)
+# 			loaded_df.to_parquet(parquet_file_path, index=False)
 
 def test(request,id):
-	df = pd.read_parquet("assest/parquet_files/source_40/emp.alien.parquet")
+	df = pd.read_parquet("assest/parquet_files/source_42/dbo.AWBuildVersion.parquet")
 	print("testing---->")
 	print(df)
 

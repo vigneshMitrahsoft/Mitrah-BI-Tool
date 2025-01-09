@@ -35,11 +35,13 @@
 	<body style="margin-top:50px;">
 		<div>{% include "navbar.html" %}</div>
 		<div class="d-flex w-100 mh-100 pt-3 pr-3 pl-3" style="column-gap:5px;">
-			<div class="col-3" id ="table_list_container">
+			<div class="col-2" id ="table_list_container">
 				<!-- <div class="list-group list-group-flush d-flex flex-row" style="border-bottom:2px solid #e9ecef"> -->
 					<div class="overflow-x:hidden" id ="chart_area">
-						<button type="button" class="btn btn-outline-secondary btn-sm" id="table_button"><i class="fas fa-table "></i></button>
-						<button type="button" class="btn btn-outline-secondary btn-sm" id="chart_button"><i class="fas fa-chart-pie "></i></button>
+						<button type="button" class="btn btn-outline-secondary btn-sm" id="table_button"><i class="fas fa-table"></i></button>
+						<button type="button" class="btn btn-outline-secondary btn-sm" id="chart_button"><i class="fas fa-chart-pie"></i></button>
+						<button type="button" class="btn btn-outline-secondary btn-sm float-right" id="refresh_button"><i class="fas fa-redo"></i></button>
+						
 					</div>
 				<!-- </div> -->
 				<div class="table_section" style="overflow-x:auto;height:83vh">
@@ -48,9 +50,9 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-2" style="border:2px solid #e9ecef">
+			<div class="col-2" style="border:2px solid #e9ecef" id ="visual_details_column">
 				<p> Properties Fields</p>
-				<form>
+				<form >
 					<div class="form-group">
 					  <label for="x-axis">X-axis</label>
 					  <select class="form-control form-control-sm" id="x_axis_dropdown">
@@ -59,7 +61,10 @@
 					</div>
 					<div class="form-group">
 						<label for="y-axis">Y-axis</label>
-						<input type="text" class="form-control form-control-sm" id="y_axis" placeholder="1">
+						<!-- <input type="text" class="form-control form-control-sm" id="y_axis" placeholder="1"> -->
+						<select class="form-control form-control-sm" id="y_axis_dropdown">
+							<option> Choose Column</option>
+						  </select>
 					  </div>
 					<div class="form-group">
 						<label for="aggregate">Aggregate Functions</label>
@@ -77,7 +82,7 @@
 					<canvas id ="bar_chartt" width="500" height="500"></canvas>
 				</div> -->
 			</div>
-			<div class="col-7" id="data_visual">
+			<div class="col-10" id="data_visual">
 				<table class="table table-sm table-bordered w-100" id="table_data">
 					<thead class="thead-light"><tr id="table_header"></tr></thead>
 					<tbody id="table-data"><tr></tr></tbody>
@@ -93,6 +98,7 @@
 	</body>
 	<script>
 		var table_list = {};
+		var numeric_columns={};
 		var table_name = [];
 		var source_id = "{{source_id}}";
 		var limit = 50;
@@ -108,28 +114,57 @@
 				type: 'POST',
 				success: function(response){
 					table_list = response.table_list;
+					// col_list = response.column_data;
 					table_names = Object.keys(table_list);
+					// console.log("gettables.table_names[0]",table_list);
+					// console.log("gettables.table_names[0]",table_names[0]);
+					// console.log("gettables.table_names",table_names);
+					numeric_columns = getNumericColumns(table_list);
+					console.log("numeric columns-->",numeric_columns);                ////////////////console
 					getTableData(table_names[0]);
 					render_tables(table_names);
 				}
 			});
 		}
-
-		function render_table_headers(column_list) {
+		function getNumericColumns(table_list){
+			var numeric_column_data={};
+			for(index in table_list){
+				console.log("table_list are-->",table_list)
+				var integer_condition = ['Int64','float64','int64']
+				let index_column = table_list[index];
+				var filteredArray = index_column.filter(function(itm){
+					return integer_condition.indexOf(itm.type) > -1;
+				});
+				numeric_column_data[index] = filteredArray;
+			}
+			return numeric_column_data;
+		}
+		function render_table_headers(column_list){
 			$('#table_header').empty();
 			table_header = '';
 			var column_dropdown = '';
 			var list_column_name ='';
 			for(index in column_list){
-				table_header += '<th scope="col">'+column_list[index]+'</th>';
-				column_dropdown += '<option>'+column_list[index]+'</option>';
-				list_column_name += '<input type="checkbox">'+column_list[index]+'';
-				list_column_name = '<div>'+list_column_name+'</div>';
-				
+				get_col_name = column_list[index];
+				table_header += '<th scope="col">'+get_col_name['column_name']+'</th>';
+				column_dropdown += '<option>'+get_col_name['column_name']+'</option>';
+				list_column_name += '<div>'+get_col_name['column_name']+'</div>';
+				list_column_name = '<div>'+list_column_name+'</div>';	
 			}
 			$('#table_header').append(table_header);
+			$('#x_axis_dropdown').empty();
 			$('#x_axis_dropdown').append(column_dropdown);
 			return list_column_name;
+		}
+		function render_y_axis(table_name){
+			let columns = numeric_columns[table_name]
+			var y_axis_dropdown ='';
+			for (index in columns){
+				get_y_axis_column = columns[index];
+				y_axis_dropdown +='<option>'+get_y_axis_column['column_name']+'</option>';
+			}
+			$('#y_axis_dropdown').empty();
+			$('#y_axis_dropdown').append(y_axis_dropdown);
 		}
 		function render_table_body(table_data) {
 			var table_record ='';
@@ -152,7 +187,7 @@
 				var table_index = table_names[index]; 
         		var table_name_for_id = table_index.replace(/\./g, "_"); 
 				// table_elements += '<button type="button" class="list-group-item list-group-item-action '+isActive+'" onClick="getTableData('+table_name+')">'+table_names[index]+'</button><div id ="'+table_name_for_id+'"></div>';
-				table_elements += '<button type="button" class="list-group-item list-group-item-action'+isActive+'" onClick="getTableData('+table_name+')" data-toggle="collapse" data-target="#'+table_name_for_id+'">'+table_names[index]+'</button><div class="collapse" id="'+table_name_for_id+'" style="font-size:14px;padding-left:10px;"></div>';
+				table_elements += '<button type="button" class="list-group-item list-group-item-action '+isActive+'" onClick="getTableData('+table_name+')" data-toggle="collapse" data-target="#'+table_name_for_id+'">'+table_names[index]+'</button><div class="collapse" id="'+table_name_for_id+'" style="font-size:14px;padding-left:10px;"></div>';
 			}
 			$('#table-list').append(table_elements);
 		}
@@ -166,8 +201,8 @@
 			still_has_data = true;
 		});
 		function getTableData(table_name){
-			$('#x_axis_dropdown').empty();
 			render_table_headers(table_list[table_name])
+			render_y_axis(table_name)
 			var column_field_name= table_name.replace(/\./g, "_");
 			$('#'+column_field_name).empty(); 
 			var table_column_list_name = render_table_headers(table_list[table_name]);
@@ -182,10 +217,8 @@
 				url: "/getdata",
 				data: data,
 				type:'POST',
-				success: function(response){
-					console.log(response.total_record);
+				success: function(response){        
 					if(response.data.length == 0){
-						console.log("false block executed");
 						still_has_data = false;
 					}
 					if(still_has_data)
@@ -195,6 +228,7 @@
 		}
 		$(document).ready(function(){
 			var get_table_result = getTableList();
+			$('#visual_details_column').hide();
 		});
 		$('#data_visual').on('scroll', function() {
 			var scrollPercentage = ($(this).scrollTop() / ($(this)[0].scrollHeight - $(this)[0].clientHeight)) * 100;
@@ -208,6 +242,9 @@
 			$('#table_data').hide();
 			$('#chart_data').show();	
 			$('#chart_data').css({"visibility":"visible"});
+			$('#visual_details_column').show();
+			$('#visual_details_column').css({"visibility":"visible"});
+			$('#data_visual').attr('class', 'col-8');
 			$.ajax({
 				url:"/report/{{source_id}}",
 				data:{'source_id':35},
@@ -222,12 +259,28 @@
 		$('#table_button').click(function(){
 			$('#table_data').show();
 			$('#chart_data').hide();
+			$('#visual_details_column').hide();
+			$('#data_visual').attr('class', 'col-10');
 		});
+		$('#refresh_button').click(function(){
+			// var test = $('.list-group-item.active').text();
+			$.ajax({
+				url:"/refresh/{{source_id}}",
+				data:{'source_id':35},
+				type:'POST',
+				success: function(response){
+					var active_table_name = $('.list-group-item.active').text();
+					// console.log("test", test);
+					// var active_table_name= $('.list-group-item.active').text();
+					// var activeButton = $('.list-group-item.active');
+					$('#table-data').empty();
+					getTableData(active_table_name);
+				}
+			})
+		})
 		function barchart(response){
 			var x_values = response.bar_chart['x_axis'];
 			var y_values = response.bar_chart['y_axis'];
-			console.log("bar_x",x_values);
-			console.log("bar_y",y_values);
 			var ctx = document.getElementById('bar_chart'); 
 			new Chart(ctx, { 
 				type: 'bar', 
@@ -275,8 +328,6 @@
 		function linechart(response){
 			var x_values = response.line_chart['x_axis'];
 			var y_values = response.line_chart['y_axis'];
-			console.log("line_x",x_values);
-			console.log("line_y",y_values);
 			var ctx = document.getElementById('line_chart'); 
 			new Chart(ctx, { 
 				type: 'line', 
