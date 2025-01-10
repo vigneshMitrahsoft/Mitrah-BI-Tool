@@ -77,15 +77,16 @@ def changeDateFormat(data_frame):
 	return data_frame
 def changePandasDatatypes(source,column_and_dtypes):
 	type_mapping = {
-    'int': 'Int64',
-    'bigint': 'Int64',
-	'integer':'Int64',
-    'float': 'float64',
-    'decimal': 'float64',
+    'int': 'Int',
+	'tinyint':'Int',
+    'bigint': 'Int',
+	'integer':'Int',
+    'float': 'float',
+    'decimal': 'float',
     'varchar': 'string',
     'nvarchar': 'string',
-    'datetime': 'datetime64[ns]',
-    'date': 'datetime64[ns]',
+    'datetime': 'datetime',
+    'date': 'datetime',
     'bit': 'bool',
     'char': 'string'
 	}
@@ -97,14 +98,12 @@ def changePandasDatatypes(source,column_and_dtypes):
 				source[column_name] = source[column_name].astype(type_mapping[column_type])
 			elif column_type =="timestamp with time zone":
 				source[column_name] = pd.to_datetime(source[column_name], errors='coerce')
+				source[column_name] = source[column_name].dt.tz_localize(None)
+				source[column_name] = source[column_name].astype("datetime")
 				# if source[column_name].dt.tz is None:
 				# 	source[column_name] = source[column_name].dt.tz_localize('UTC')
 				# source[column_name] = source[column_name].dt.tz_convert('UTC')
-				source[column_name] = source[column_name].dt.tz_localize(None)
-				source[column_name] = source[column_name].astype("datetime64[ns]")
-	# column_data_types = ['string' if dtype == 'object' else dtype for dtype in source]
-	# Print the DataFrame's data types after conversion
-	print("After source dtypes-->", source)
+	print("source->",source)
 	return source
 def sourceRecords(request):
 	source_details = request.POST.get("source_details")
@@ -112,10 +111,10 @@ def sourceRecords(request):
 	db_credential = decryptDbCredential(source_details)
 	checked_tables = request.POST.get("checked_tables")
 	selected_tables = checked_tables.split(",")
-	# user_id = 1
-	# # create_db = sources.objects.create(db_credential = source_details, selected_tables = checked_tables, user_id = user_id)
-	# # source_id = create_db.source_id
-	source_id = 13
+	user_id = 1
+	source_id = 14
+	# create_db = sources.objects.create(db_credential = source_details, selected_tables = checked_tables, user_id = user_id)
+	# source_id = create_db.source_id
 	connector = connectors(**db_credential)
 	for table in selected_tables:
 		select_table = connectors(driver_name = db_credential['driver_name'], server_name = db_credential['server_name'], database_name = 
@@ -140,7 +139,7 @@ def sourceRecords(request):
 		else:
 			file_path = f'{source_path_directory}/{parquet_name}'
 			df.to_parquet(file_path)
-	# source_id = 40
+	# source_id = 42
 	return redirect(f"/source/{source_id}")
 def sourceData(request,id):
 	try:

@@ -55,7 +55,6 @@ class connectors:
 			return column_dtype
 	def incremental_load(self,target_file,table_name):
 		if self.connection:
-			print("this block executed-------->")
 			target_table = target_file
 			get_table_query_string = query.incremental_load['select_table_records'].format(table_name)
 			primary_table_name = table_name.rsplit(".")[-1]

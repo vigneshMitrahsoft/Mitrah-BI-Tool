@@ -154,6 +154,7 @@ class Sources(APIView):
 	
 	@api_view(('POST',))
 	def refresh(request,source_id):
+		print("refresh block executed")
 		source_id = source_id
 		source_file = sources.objects.get(source_id=source_id)
 		source_tables = source_file.selected_tables.split(",")
